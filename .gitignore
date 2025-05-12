@@ -29,3 +29,9 @@ go.work.sum
 
 _debug
 tmp
+
+*.apk
+*.apk.idsig
+
+ezMsg
+*.wasm

@@ -4,11 +4,6 @@ import (
 	"gioui.org/layout"
 )
 
-const (
-	Horizontal layout.Axis = iota
-	Vertical
-)
-
 type FlexOpts struct {
 	Alignment layout.Axis
 }

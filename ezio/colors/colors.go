@@ -1,4 +1,4 @@
-package ezio
+package colors
 
 import "image/color"
 

@@ -6,9 +6,10 @@ import (
 	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/widget"
-	"gioui.org/widget/material"
 	"gioui.org/x/component"
 	. "github.com/ezydark/ezMsg/ezio"
+	"github.com/ezydark/ezMsg/libs/gui"
+	"github.com/ezydark/ezMsg/libs/gui/pages"
 	"github.com/rs/zerolog/log"
 )
 
@@ -23,7 +24,8 @@ func HandleFrameEvent(event gio_app.FrameEvent) {
 	// Context carries layout constraints and input state
 	gtx := gio_app.NewContext(&ops, event)
 
-	TestEzMsg(gtx)
+	// TestEzMsg(gtx)
+	pages.Overview(gtx)
 
 	// Submit operations to be rendered
 	// This is where the actual drawing instructions are executed
@@ -31,9 +33,7 @@ func HandleFrameEvent(event gio_app.FrameEvent) {
 }
 
 var myBtn widget.Clickable
-var myTheme = material.NewTheme()
 var myInput widget.Editor
-
 var myContextArea = component.ContextArea{Activation: pointer.ButtonSecondary}
 
 // var myList layout.List
@@ -65,7 +65,7 @@ func TestEzMsg(gtx layout.Context) {
 					Margin(MarginOpts{All: gtx.Metric.PxToDp(8)},
 						Input(InputOpts{
 							EditorPtr: &myInput,
-							ThemePtr:  myTheme,
+							ThemePtr:  gui.MyTheme,
 							Hint:      "Type new message...",
 						}),
 					),
@@ -74,7 +74,7 @@ func TestEzMsg(gtx layout.Context) {
 					Button(ButtonOpts{
 						ButtonPtr: &myBtn,
 						Text:      "Click Me!",
-						ThemePtr:  myTheme,
+						ThemePtr:  gui.MyTheme,
 					}),
 				),
 			),
