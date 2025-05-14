@@ -2,7 +2,13 @@ package flex
 
 import "gioui.org/layout"
 
-func Flex(opts FlexOpts, children ...FlexChildOpts) layout.Widget {
+type FlexBoxOpts struct {
+	Axis      layout.Axis
+	Spacing   layout.Spacing
+	Alignment layout.Alignment
+}
+
+func FlexBox(opts FlexBoxOpts, children ...FlexChildOpts) layout.Widget {
 	return func(gtx layout.Context) layout.Dimensions {
 		var kids []layout.FlexChild
 		for _, ch := range children {
@@ -24,7 +30,7 @@ func Flex(opts FlexOpts, children ...FlexChildOpts) layout.Widget {
 				}
 				gtx.Constraints = c
 				var d layout.Dimensions
-				for _, childW := range ch.Widgets {
+				for _, childW := range ch.widgets {
 					d = childW(gtx)
 				}
 				return d
@@ -38,6 +44,6 @@ func Flex(opts FlexOpts, children ...FlexChildOpts) layout.Widget {
 				kids = append(kids, layout.Flexed(1, composite_widget))
 			}
 		}
-		return layout.Flex{Axis: opts.Alignment}.Layout(gtx, kids...)
+		return layout.Flex{Axis: opts.Axis, Spacing: opts.Spacing, Alignment: opts.Alignment}.Layout(gtx, kids...)
 	}
 }

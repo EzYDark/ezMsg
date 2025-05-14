@@ -13,8 +13,22 @@ type MarginOpts struct {
 	All unit.Dp
 }
 
-func Margin(opts MarginOpts, child layout.Widget) layout.Widget {
+func Margin(opts *MarginOpts, children ...layout.Widget) layout.Widget {
 	return func(gtx layout.Context) layout.Dimensions {
+		if opts == nil {
+			opts = &MarginOpts{}
+		}
+
+		// Create a composite widget from all children
+		composite_widget := func(gtx layout.Context) layout.Dimensions {
+			var d layout.Dimensions
+			for _, w := range children {
+				d = w(gtx)
+			}
+			return d
+		}
+
+		// Apply margin to the composite widget
 		if opts.All != 0 {
 			inset := layout.Inset{
 				Top:    opts.All,
@@ -22,7 +36,7 @@ func Margin(opts MarginOpts, child layout.Widget) layout.Widget {
 				Left:   opts.All,
 				Right:  opts.All,
 			}
-			return inset.Layout(gtx, child)
+			return inset.Layout(gtx, composite_widget)
 		} else {
 			inset := layout.Inset{
 				Top:    opts.Top,
@@ -30,7 +44,7 @@ func Margin(opts MarginOpts, child layout.Widget) layout.Widget {
 				Left:   opts.Left,
 				Right:  opts.Right,
 			}
-			return inset.Layout(gtx, child)
+			return inset.Layout(gtx, composite_widget)
 		}
 	}
 }

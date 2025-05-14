@@ -1,16 +1,15 @@
 package ezio
 
 import (
+	"gioui.org/layout"
 	"gioui.org/x/richtext"
 	"github.com/ezydark/ezMsg/ezio/colors"
 	"github.com/ezydark/ezMsg/ezio/components"
 	"github.com/ezydark/ezMsg/ezio/layouts"
 	"github.com/ezydark/ezMsg/ezio/layouts/flex"
-	"github.com/ezydark/ezMsg/libs/gui"
 )
 
 // --- Colors ---
-
 var (
 	Red    = colors.Red
 	Green  = colors.Green
@@ -38,35 +37,82 @@ var (
 
 // Re-export: Flex layout
 type (
-	FlexOpts            = flex.FlexOpts
-	FlexChildOpts       = flex.FlexChildOpts
-	FlexChildStaticOpts = flex.FlexChildStaticOpts
+	FlexBoxOpts   = flex.FlexBoxOpts
+	FlexChildOpts = flex.FlexChildOpts
 )
 
+// Re-defined from layout.Axis lib
 const (
-	Horizontal = gui.Horizontal
-	Vertical   = gui.Vertical
+	Horizontal layout.Axis = iota
+	Vertical
+)
+
+// Re-defined from layout.Alignment lib
+const (
+	Start layout.Alignment = iota
+	End
+	Middle
+	Baseline
+)
+
+// Re-defined from layout.Spacing lib
+const (
+	// SpaceEnd leaves space at the end.
+	SpaceEnd layout.Spacing = iota
+	// SpaceStart leaves space at the start.
+	SpaceStart
+	// SpaceSides shares space between the start and end.
+	SpaceSides
+	// SpaceAround distributes space evenly between children,
+	// with half as much space at the start and end.
+	SpaceAround
+	// SpaceBetween distributes space evenly between children,
+	// leaving no space at the start and end.
+	SpaceBetween
+	// SpaceEvenly distributes space evenly between children and
+	// at the start and end.
+	SpaceEvenly
+)
+
+// Re-defined from layout.Direction lib
+const (
+	NW layout.Direction = iota
+	N
+	NE
+	E
+	SE
+	S
+	SW
+	W
+	Center
 )
 
 var (
-	Flex            = flex.Flex
-	FlexChild       = flex.FlexChild
-	FlexChildWeight = flex.FlexChildWeight
-	FlexChildStatic = flex.FlexChildStatic
+	FlexBox   = flex.FlexBox
+	FlexChild = flex.FlexChild
+)
+
+// Re-export Stack layout
+type StackOpts = layouts.StackOpts
+
+var (
+	StackBox      = layouts.StackBox
+	StackedChild  = layouts.StackedChild
+	ExpandedChild = layouts.ExpandedChild
 )
 
 // Re-export: List layout
 type ListOpts = layouts.ListOpts
 
 var (
-	List      = layouts.List
+	ListBox   = layouts.ListBox
 	ListChild = layouts.ListChild
 )
 
 // Re-export: Direction layout
-type DirectionOpts = layouts.DirectionOpts
+type DirectionBoxOpts = layouts.DirectionBoxOpts
 
-var Direction = layouts.Direction
+var DirectionBox = layouts.DirectionBox
 
 // Re-export: Margin layout
 type MarginOpts = layouts.MarginOpts
@@ -95,11 +141,13 @@ type RectOpts = components.RectOpts
 
 var Rect = components.Rect
 
+// Re-export: Circle component
+type CircleOpts = components.CircleOpts
+
+var Circle = components.Circle
+
 // Re-export: Text component
 type TextOpts = components.TextOpts
-
-type ResponsiveOpts = components.ResponsiveOpts
-type Span = components.Span
 type SpanStyle = richtext.SpanStyle
 
 var Text = components.Text

@@ -2,20 +2,22 @@ package flex
 
 import "gioui.org/layout"
 
-func FlexChild(widgets ...layout.Widget) FlexChildOpts {
-	return FlexChildOpts{Weight: 1, Widgets: widgets}
+type FlexChildOpts struct {
+	Weight     float32
+	MaxW, MaxH int
+	MinW, MinH int
+	W, H       int // Static size
+	widgets    []layout.Widget
 }
 
-func FlexChildWeight(wt float32, widgets ...layout.Widget) FlexChildOpts {
-	return FlexChildOpts{Weight: wt, Widgets: widgets}
-}
-
-func FlexChildStatic(opts FlexChildStaticOpts, widgets ...layout.Widget) FlexChildOpts {
-	return FlexChildOpts{
-		W:       opts.W,
-		H:       opts.H,
-		MinW:    opts.MinW,
-		MinH:    opts.MinH,
-		Widgets: widgets,
+func FlexChild(opts *FlexChildOpts, widgets ...layout.Widget) FlexChildOpts {
+	if opts == nil {
+		opts = &FlexChildOpts{
+			Weight:  1,
+			widgets: widgets,
+		}
 	}
+
+	opts.widgets = widgets
+	return *opts
 }
