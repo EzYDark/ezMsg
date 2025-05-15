@@ -1,8 +1,6 @@
 package overview
 
 import (
-	"image/color"
-
 	"gioui.org/layout"
 	"gioui.org/unit"
 	"gioui.org/x/richtext"
@@ -18,8 +16,6 @@ var list_state layout.List
 var DBPtr = db.InitDB()
 
 func Overview(gtx layout.Context) {
-	DarkBackground := color.NRGBA{R: uint8(37), G: uint8(35), B: uint8(49), A: uint8(255)}
-
 	FlexBox(FlexBoxOpts{Axis: Vertical},
 		// App header
 		FlexChild(&FlexChildOpts{H: 70},

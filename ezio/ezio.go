@@ -33,6 +33,10 @@ var (
 	LightPink   = colors.LightPink
 )
 
+var (
+	DarkBackground = colors.DarkBackground
+)
+
 // --- Layouts ---
 
 // Re-export: Flex layout

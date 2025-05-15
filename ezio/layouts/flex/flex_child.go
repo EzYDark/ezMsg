@@ -16,11 +16,10 @@ type FlexChildOpts struct {
 func FlexChild(opts *FlexChildOpts, widgets ...layout.Widget) FlexChildOpts {
 	if opts == nil {
 		opts = &FlexChildOpts{
-			Weight:  1,
 			widgets: widgets,
 		}
+	} else {
+		opts.widgets = widgets
 	}
-
-	opts.widgets = widgets
 	return *opts
 }

@@ -25,3 +25,7 @@ var (
 	LightPurple = color.NRGBA{R: uint8(193), G: uint8(182), B: uint8(255), A: uint8(255)}
 	LightPink   = color.NRGBA{R: uint8(255), G: uint8(182), B: uint8(255), A: uint8(255)}
 )
+
+var (
+	DarkBackground = color.NRGBA{R: uint8(37), G: uint8(35), B: uint8(49), A: uint8(255)}
+)

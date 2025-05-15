@@ -1,3 +1,4 @@
+// File: ezio/layouts/flex/flex.go
 package flex
 
 import "gioui.org/layout"
@@ -14,8 +15,6 @@ func FlexBox(opts FlexBoxOpts, children ...FlexChildOpts) layout.Widget {
 		for _, ch := range children {
 			ch_minWidth := gtx.Dp(ch.MinW)
 			ch_minHeight := gtx.Dp(ch.MinH)
-			// ch_maxWidth := gtx.Dp(ch.MaxW)
-			// ch_maxHeight := gtx.Dp(ch.MaxH)
 			ch_Width := gtx.Dp(ch.W)
 			ch_Height := gtx.Dp(ch.H)
 
@@ -47,8 +46,8 @@ func FlexBox(opts FlexBoxOpts, children ...FlexChildOpts) layout.Widget {
 				kids = append(kids, layout.Rigid(composite_widget))
 			case ch.Weight > 0:
 				kids = append(kids, layout.Flexed(ch.Weight, composite_widget))
-			default:
-				kids = append(kids, layout.Flexed(1, composite_widget))
+			default: // Child has Weight: 0 and no explicit W/H. Should be Rigid.
+				kids = append(kids, layout.Rigid(composite_widget))
 			}
 		}
 		return layout.Flex{Axis: opts.Axis, Spacing: opts.Spacing, Alignment: opts.Alignment}.Layout(gtx, kids...)
