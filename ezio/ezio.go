@@ -145,6 +145,7 @@ var Rect = components.Rect
 type CircleOpts = components.CircleOpts
 
 var Circle = components.Circle
+var LoadImageHelper = components.LoadImageHelper
 
 // Re-export: Text component
 type TextOpts = components.TextOpts
