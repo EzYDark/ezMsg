@@ -12,21 +12,28 @@ func FlexBox(opts FlexBoxOpts, children ...FlexChildOpts) layout.Widget {
 	return func(gtx layout.Context) layout.Dimensions {
 		var kids []layout.FlexChild
 		for _, ch := range children {
+			ch_minWidth := gtx.Dp(ch.MinW)
+			ch_minHeight := gtx.Dp(ch.MinH)
+			// ch_maxWidth := gtx.Dp(ch.MaxW)
+			// ch_maxHeight := gtx.Dp(ch.MaxH)
+			ch_Width := gtx.Dp(ch.W)
+			ch_Height := gtx.Dp(ch.H)
+
 			composite_widget := func(gtx layout.Context) layout.Dimensions {
 				c := gtx.Constraints
-				if ch.MinW > 0 && c.Min.X < ch.MinW {
-					c.Min.X = ch.MinW
+				if ch.MinW > 0 && c.Min.X < ch_minWidth {
+					c.Min.X = ch_minWidth
 				}
-				if ch.MinH > 0 && c.Min.Y < ch.MinH {
-					c.Min.Y = ch.MinH
+				if ch.MinH > 0 && c.Min.Y < ch_minHeight {
+					c.Min.Y = ch_minHeight
 				}
 				if ch.W > 0 {
-					c.Min.X = ch.W
-					c.Max.X = ch.W
+					c.Min.X = ch_Width
+					c.Max.X = ch_Width
 				}
 				if ch.H > 0 {
-					c.Min.Y = ch.H
-					c.Max.Y = ch.H
+					c.Min.Y = ch_Height
+					c.Max.Y = ch_Height
 				}
 				gtx.Constraints = c
 				var d layout.Dimensions

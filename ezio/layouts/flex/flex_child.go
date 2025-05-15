@@ -1,12 +1,15 @@
 package flex
 
-import "gioui.org/layout"
+import (
+	"gioui.org/layout"
+	"gioui.org/unit"
+)
 
 type FlexChildOpts struct {
 	Weight     float32
-	MaxW, MaxH int
-	MinW, MinH int
-	W, H       int // Static size
+	MaxW, MaxH unit.Dp
+	MinW, MinH unit.Dp
+	W, H       unit.Dp // Static size
 	widgets    []layout.Widget
 }
 

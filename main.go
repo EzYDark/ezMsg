@@ -4,7 +4,6 @@ import (
 	"os"
 
 	gio_app "gioui.org/app"
-	"gioui.org/unit"
 	"github.com/ezydark/ezMsg/app"
 	gui "github.com/ezydark/ezMsg/libs/gui/events"
 	"github.com/rs/zerolog/log"
@@ -27,7 +26,7 @@ func main() {
 		window := new(gio_app.Window)
 
 		window.Option(gio_app.Title(WindowTitle))
-		window.Option(gio_app.Size(unit.Dp(WindowWidth), unit.Dp(WindowHeight)))
+		// window.Option(gio_app.Size(unit.Dp(WindowWidth), unit.Dp(WindowHeight)))
 
 		err := run_gui(window)
 		if err != nil {

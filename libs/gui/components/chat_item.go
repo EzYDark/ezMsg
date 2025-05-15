@@ -11,7 +11,7 @@ func ListItemChat(loggedUser db.User) layout.Widget {
 		FlexChild(&FlexChildOpts{H: 70},
 			FlexBox(FlexBoxOpts{Axis: Horizontal},
 				// Profile picture space
-				FlexChild(&FlexChildOpts{Weight: 1.5},
+				FlexChild(&FlexChildOpts{W: 100},
 					Rect(RectOpts{Color: Red}),
 					StackBox(StackOpts{Alignment: Center},
 						StackedChild(Circle(CircleOpts{R: 25, Color: LightRed})),

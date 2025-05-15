@@ -27,11 +27,4 @@ go.work.sum
 # Service log
 *.log
 
-_debug
-tmp
-
-*.apk
-*.apk.idsig
-
-ezMsg
-*.wasm
+target
