@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	WindowWidth  = 500
-	WindowHeight = 700
+	WindowWidth  = 550
+	WindowHeight = 900
 	WindowTitle  = "ezChat"
 )
 
