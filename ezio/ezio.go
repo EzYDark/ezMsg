@@ -78,17 +78,16 @@ const (
 	SpaceEvenly
 )
 
-// Re-defined from layout.Direction lib
-const (
-	NW layout.Direction = iota
-	N
-	NE
-	E
-	SE
-	S
-	SW
-	W
-	Center
+var (
+	NW     = layout.NW
+	N      = layout.N
+	NE     = layout.NE
+	E      = layout.E
+	SE     = layout.SE
+	S      = layout.S
+	SW     = layout.SW
+	W      = layout.W
+	Center = layout.Center
 )
 
 var (
@@ -97,7 +96,7 @@ var (
 )
 
 // Re-export Stack layout
-type StackOpts = layouts.StackOpts
+type StackBoxOpts = layouts.StackBoxOpts
 
 var (
 	StackBox      = layouts.StackBox
