@@ -7,4 +7,4 @@
         in the StackBox) [Stack layout](https://gioui.org/doc/architecture/layout#stack)
 - [ ] Add support for loading fonts from remote URLs (to "fix" Android`s problem
         with not bundling local fonts into .apk)
-- [ ] Hover event for Chat item in Overview
+- [x] Hover event for Chat item in Overview
