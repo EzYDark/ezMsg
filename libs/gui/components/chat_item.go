@@ -1,20 +1,50 @@
 package components
 
 import (
-	"gioui.org/layout"
+	// Added for defining custom colors if needed
+
+	// Added for click logging
+
+	"image/color"
+
+	"gioui.org/layout" // Added for clipping the background shape
+	"gioui.org/op/clip"
+	"gioui.org/op/paint"
+	// Added for painting the background
+	"gioui.org/widget" // Added for widget.Clickable
 	"gioui.org/x/richtext"
 	"github.com/ezydark/ezMsg/app/db"
-	. "github.com/ezydark/ezMsg/ezio"
+	. "github.com/ezydark/ezMsg/ezio" // Assuming ezio re-exports colors like White, Gray, etc.
 	"github.com/ezydark/ezMsg/libs/gui"
+	"github.com/rs/zerolog/log"
 )
 
 var chat_name richtext.InteractiveText
 var chat_msg richtext.InteractiveText
 var chat_time richtext.InteractiveText
 
-func ListItemChat(loggedUser db.User) layout.Widget {
+// ListItemChat now accepts a user and a clickable to manage its state.
+func ListItemChat(loggedUser db.User, clickable *widget.Clickable) layout.Widget {
+	return func(gtx layout.Context) layout.Dimensions {
+		if clickable.Clicked(gtx) {
+			log.Debug().Msg("Chat item clicked")
+		}
+
+		return clickable.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+			if clickable.Hovered() {
+				hover_back := color.NRGBA{R: 255, G: 255, B: 255, A: 2}
+				paint.FillShape(gtx.Ops, hover_back, clip.Rect{Max: gtx.Constraints.Max}.Op())
+			}
+
+			return chatItemContent(gtx, loggedUser)(gtx)
+		})
+	}
+}
+
+// chatItemContent contains the original drawing logic for the chat item.
+func chatItemContent(gtx layout.Context, loggedUser db.User) layout.Widget {
 	return FlexBox(FlexBoxOpts{},
-		FlexChild(&FlexChildOpts{H: 76},
+		FlexChild(&FlexChildOpts{H: 76}, // Ensure this height matches clickable area or vice-versa
 			FlexBox(FlexBoxOpts{Axis: Horizontal},
 				// Profile picture space
 				FlexChild(&FlexChildOpts{W: 54},
@@ -49,7 +79,7 @@ func ListItemChat(loggedUser db.User) layout.Widget {
 													TextSpan(SpanStyle{
 														Font:    gui.Fonts[0].Font,
 														Size:    16,
-														Color:   Gray,
+														Color:   Gray, // ezio.Gray
 														Content: loggedUser.Chats[0].Messages[len(loggedUser.Chats[0].Messages)-1].Message,
 													}),
 												),
@@ -60,7 +90,7 @@ func ListItemChat(loggedUser db.User) layout.Widget {
 														TextSpan(SpanStyle{
 															Font:    gui.Fonts[0].Font,
 															Size:    16,
-															Color:   Gray,
+															Color:   Gray, // ezio.Gray
 															Content: loggedUser.Chats[0].Messages[len(loggedUser.Chats[0].Messages)-1].Timestamp.Format("15:04"),
 														}),
 													),
@@ -78,6 +108,7 @@ func ListItemChat(loggedUser db.User) layout.Widget {
 	)
 }
 
+// ListItemChat2 remains unchanged for now, but you can apply similar logic if needed.
 func ListItemChat2(loggedUser db.User) layout.Widget {
 	return FlexBox(FlexBoxOpts{},
 		FlexChild(&FlexChildOpts{H: 70},
