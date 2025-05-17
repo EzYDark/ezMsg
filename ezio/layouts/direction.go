@@ -8,17 +8,16 @@ type DirectionBoxOpts struct {
 
 func DirectionBox(opts *DirectionBoxOpts, children ...layout.Widget) layout.Widget {
 	return func(gtx layout.Context) layout.Dimensions {
-		if opts == nil {
-			opts = &DirectionBoxOpts{}
+		var alignDirection layout.Direction
+		if opts != nil {
+			alignDirection = opts.Direction
+		}
+		stackOpts := StackBoxOpts{
+			Alignment: alignDirection,
 		}
 
-		composite_widget := func(gtx layout.Context) layout.Dimensions {
-			var d layout.Dimensions
-			for _, w := range children {
-				d = w(gtx)
-			}
-			return d
-		}
-		return layout.Direction(opts.Direction).Layout(gtx, composite_widget)
+		content := StackedChild(children...)
+
+		return StackBox(stackOpts, content)(gtx)
 	}
 }
