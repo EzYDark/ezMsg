@@ -8,6 +8,7 @@ import (
 	"image/color"
 
 	"gioui.org/layout" // Added for clipping the background shape
+	"gioui.org/op"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 
@@ -17,6 +18,7 @@ import (
 	"github.com/ezydark/ezMsg/app/db"
 	. "github.com/ezydark/ezMsg/ezio" // Assuming ezio re-exports colors like White, Gray, etc.
 	"github.com/ezydark/ezMsg/libs/gui"
+	"github.com/ezydark/ezMsg/libs/gui/pages"
 	"github.com/rs/zerolog/log"
 )
 
@@ -28,7 +30,9 @@ var chat_time richtext.InteractiveText
 func ListItemChat(loggedUser db.User, clickable *widget.Clickable) layout.Widget {
 	return func(gtx layout.Context) layout.Dimensions {
 		if clickable.Clicked(gtx) {
-			log.Debug().Msg("Chat item clicked")
+			log.Debug().Msg("Switched to chat page")
+			pages.AppState.CurrentPage = pages.ChatPage
+			gtx.Execute(op.InvalidateCmd{})
 		}
 
 		return clickable.Layout(gtx, func(gtx layout.Context) layout.Dimensions {

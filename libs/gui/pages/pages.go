@@ -1,7 +1,17 @@
 package pages
 
-import (
-	"github.com/ezydark/ezMsg/libs/gui/pages/overview"
+type Page uint8
+
+const (
+	OverviewPage Page = iota
+	ChatPage
+	SettingsPage
 )
 
-var Overview = overview.Overview
+type ezAppState struct {
+	CurrentPage Page
+}
+
+var AppState = &ezAppState{
+	CurrentPage: OverviewPage,
+}

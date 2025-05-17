@@ -94,9 +94,9 @@ func Overview(gtx layout.Context) {
 				),
 			),
 		),
-		// App footer
-		FlexChild(&FlexChildOpts{H: 70},
-			Rect(RectOpts{Color: LightRed}),
-		),
+		// // App footer
+		// FlexChild(&FlexChildOpts{H: 70},
+		// 	Rect(RectOpts{Color: LightRed}),
+		// ),
 	)(gtx)
 }
