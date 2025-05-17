@@ -53,7 +53,7 @@ func Overview(gtx layout.Context) {
 		// App main content
 		FlexChild(&FlexChildOpts{Weight: 1},
 			Rect(RectOpts{Color: DarkBackground}),
-			Margin(&MarginOpts{All: 20},
+			Margin(&MarginOpts{Top: 20, Bottom: 20},
 				ListBox(ListOpts{ListPtr: &list_state, Axis: Vertical},
 					ListChild(
 						components.ListItemChat(DBPtr.RegisteredUsers[0], &chat_items_clickable[0]),

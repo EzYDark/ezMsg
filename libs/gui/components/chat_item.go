@@ -10,6 +10,7 @@ import (
 	"gioui.org/layout" // Added for clipping the background shape
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
+
 	// Added for painting the background
 	"gioui.org/widget" // Added for widget.Clickable
 	"gioui.org/x/richtext"
@@ -43,56 +44,58 @@ func ListItemChat(loggedUser db.User, clickable *widget.Clickable) layout.Widget
 
 // chatItemContent contains the original drawing logic for the chat item.
 func chatItemContent(gtx layout.Context, loggedUser db.User) layout.Widget {
-	return FlexBox(FlexBoxOpts{},
-		FlexChild(&FlexChildOpts{H: 76}, // Ensure this height matches clickable area or vice-versa
-			FlexBox(FlexBoxOpts{Axis: Horizontal},
-				// Profile picture space
-				FlexChild(&FlexChildOpts{W: 54},
-					StackBox(StackBoxOpts{Alignment: Center},
-						StackedChild(
-							Circle(CircleOpts{R: 27, Color: LightRed, ImgURL: loggedUser.ProfilePictureURL}),
+	return Margin(&MarginOpts{Left: 20, Right: 20},
+		FlexBox(FlexBoxOpts{},
+			FlexChild(&FlexChildOpts{H: 76}, // Ensure this height matches clickable area or vice-versa
+				FlexBox(FlexBoxOpts{Axis: Horizontal},
+					// Profile picture space
+					FlexChild(&FlexChildOpts{W: 54},
+						StackBox(StackBoxOpts{Alignment: Center},
+							StackedChild(
+								Circle(CircleOpts{R: 27, Color: LightRed, ImgURL: loggedUser.ProfilePictureURL}),
+							),
 						),
 					),
-				),
-				// Chat information space
-				FlexChild(&FlexChildOpts{Weight: 8.5},
-					Margin(&MarginOpts{Left: 16},
-						StackBox(StackBoxOpts{Alignment: W},
-							StackedChild(
-								FlexBox(FlexBoxOpts{Axis: Vertical},
-									// Chat header (Friend`s name)
-									FlexChild(nil,
-										Text(TextOpts{ThemePtr: gui.MyTheme, TextState: &chat_name},
-											TextSpan(SpanStyle{
-												Font:    gui.Fonts[1].Font,
-												Size:    18,
-												Color:   White,
-												Content: loggedUser.Chats[0].Members[0].Username,
-											}),
-										),
-									),
-									// Last chat message
-									FlexChild(nil,
-										FlexBox(FlexBoxOpts{Axis: Horizontal},
-											FlexChild(nil,
-												Text(TextOpts{ThemePtr: gui.MyTheme, TextState: &chat_msg},
-													TextSpan(SpanStyle{
-														Font:    gui.Fonts[0].Font,
-														Size:    16,
-														Color:   Gray, // ezio.Gray
-														Content: loggedUser.Chats[0].Messages[len(loggedUser.Chats[0].Messages)-1].Message,
-													}),
-												),
+					// Chat information space
+					FlexChild(&FlexChildOpts{Weight: 8.5},
+						Margin(&MarginOpts{Left: 16},
+							StackBox(StackBoxOpts{Alignment: W},
+								StackedChild(
+									FlexBox(FlexBoxOpts{Axis: Vertical},
+										// Chat header (Friend`s name)
+										FlexChild(nil,
+											Text(TextOpts{ThemePtr: gui.MyTheme, TextState: &chat_name},
+												TextSpan(SpanStyle{
+													Font:    gui.Fonts[1].Font,
+													Size:    18,
+													Color:   White,
+													Content: loggedUser.Chats[0].Members[0].Username,
+												}),
 											),
-											FlexChild(nil,
-												Margin(&MarginOpts{Left: 16},
-													Text(TextOpts{ThemePtr: gui.MyTheme, TextState: &chat_time},
+										),
+										// Last chat message
+										FlexChild(nil,
+											FlexBox(FlexBoxOpts{Axis: Horizontal},
+												FlexChild(nil,
+													Text(TextOpts{ThemePtr: gui.MyTheme, TextState: &chat_msg},
 														TextSpan(SpanStyle{
 															Font:    gui.Fonts[0].Font,
 															Size:    16,
 															Color:   Gray, // ezio.Gray
-															Content: loggedUser.Chats[0].Messages[len(loggedUser.Chats[0].Messages)-1].Timestamp.Format("15:04"),
+															Content: loggedUser.Chats[0].Messages[len(loggedUser.Chats[0].Messages)-1].Message,
 														}),
+													),
+												),
+												FlexChild(nil,
+													Margin(&MarginOpts{Left: 16},
+														Text(TextOpts{ThemePtr: gui.MyTheme, TextState: &chat_time},
+															TextSpan(SpanStyle{
+																Font:    gui.Fonts[0].Font,
+																Size:    16,
+																Color:   Gray, // ezio.Gray
+																Content: loggedUser.Chats[0].Messages[len(loggedUser.Chats[0].Messages)-1].Timestamp.Format("15:04"),
+															}),
+														),
 													),
 												),
 											),
@@ -110,14 +113,16 @@ func chatItemContent(gtx layout.Context, loggedUser db.User) layout.Widget {
 
 // ListItemChat2 remains unchanged for now, but you can apply similar logic if needed.
 func ListItemChat2(loggedUser db.User) layout.Widget {
-	return FlexBox(FlexBoxOpts{},
-		FlexChild(&FlexChildOpts{H: 70},
-			FlexBox(FlexBoxOpts{Axis: Horizontal},
-				FlexChild(&FlexChildOpts{Weight: 1},
-					Rect(RectOpts{Color: Blue}),
-				),
-				FlexChild(&FlexChildOpts{Weight: 1},
-					Rect(RectOpts{Color: Orange}),
+	return Margin(&MarginOpts{Left: 20, Right: 20},
+		FlexBox(FlexBoxOpts{},
+			FlexChild(&FlexChildOpts{H: 70},
+				FlexBox(FlexBoxOpts{Axis: Horizontal},
+					FlexChild(&FlexChildOpts{Weight: 1},
+						Rect(RectOpts{Color: Blue}),
+					),
+					FlexChild(&FlexChildOpts{Weight: 1},
+						Rect(RectOpts{Color: Orange}),
+					),
 				),
 			),
 		),
