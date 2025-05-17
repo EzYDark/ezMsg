@@ -104,6 +104,11 @@ var (
 	ExpandedChild = layouts.ExpandedChild
 )
 
+// Re-export Background layout
+type BackgroundBoxOpts = layouts.BackgroundBoxOpts
+
+var BackgroundBox = layouts.BackgroundBox
+
 // Re-export: List layout
 type ListOpts = layouts.ListOpts
 
