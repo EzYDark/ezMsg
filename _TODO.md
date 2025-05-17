@@ -14,3 +14,8 @@
             on app startup (temp)
 - [ ] [!] Saving data (chat history) on the server and be able
         to get the data from server
+
+
+## Final release of v0.1
+- [ ] [!] Build in Release mode
+- [ ] Take the .apk on USB drive
