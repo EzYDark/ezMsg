@@ -5,17 +5,14 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/x/richtext"
-	"github.com/ezydark/ezMsg/app/db"
 	. "github.com/ezydark/ezMsg/ezio"
 	"github.com/ezydark/ezMsg/libs/gui"
-	"github.com/ezydark/ezMsg/libs/gui/components"
+	"github.com/ezydark/ezMsg/libs/gui/widgets"
 )
 
 var text_state richtext.InteractiveText
 var list_state layout.List
 var chat_items_clickable [10]widget.Clickable
-
-var DBPtr = db.InitDB()
 
 func Overview(gtx layout.Context) {
 	FlexBox(FlexBoxOpts{Axis: Vertical},
@@ -27,18 +24,16 @@ func Overview(gtx layout.Context) {
 					FlexChild(&FlexChildOpts{Weight: 1},
 						Text(TextOpts{ThemePtr: gui.MyTheme, TextState: &text_state},
 							TextSpan(SpanStyle{
-								Content:     "Ez",
-								Font:        gui.Fonts[1].Font,
-								Color:       White,
-								Interactive: true,
-								Size:        unit.Sp(36),
+								Content: "Ez",
+								Font:    gui.Fonts[1].Font,
+								Color:   White,
+								Size:    unit.Sp(36),
 							}),
 							TextSpan(SpanStyle{
-								Content:     "Msg",
-								Font:        gui.Fonts[1].Font,
-								Color:       White,
-								Interactive: true,
-								Size:        unit.Sp(36),
+								Content: "Msg",
+								Font:    gui.Fonts[1].Font,
+								Color:   White,
+								Size:    unit.Sp(36),
 							}),
 						),
 					),
@@ -56,40 +51,40 @@ func Overview(gtx layout.Context) {
 			Margin(&MarginOpts{Top: 20, Bottom: 20},
 				ListBox(ListOpts{ListPtr: &list_state, Axis: Vertical},
 					ListChild(
-						components.ListItemChat(DBPtr.RegisteredUsers[0], &chat_items_clickable[0]),
+						widgets.ListItemChat(&chat_items_clickable[0]),
 					),
 					ListChild(
-						components.ListItemChat2(DBPtr.RegisteredUsers[0]),
+						widgets.ListItemChat2(gui.DBPtr.RegisteredUsers[0]),
 					),
 					ListChild(
-						components.ListItemChat(DBPtr.RegisteredUsers[0], &chat_items_clickable[1]),
+						widgets.ListItemChat(&chat_items_clickable[1]),
 					),
 					ListChild(
-						components.ListItemChat2(DBPtr.RegisteredUsers[0]),
+						widgets.ListItemChat2(gui.DBPtr.RegisteredUsers[0]),
 					),
 					ListChild(
-						components.ListItemChat(DBPtr.RegisteredUsers[0], &chat_items_clickable[2]),
+						widgets.ListItemChat(&chat_items_clickable[2]),
 					),
 					ListChild(
-						components.ListItemChat2(DBPtr.RegisteredUsers[0]),
+						widgets.ListItemChat2(gui.DBPtr.RegisteredUsers[0]),
 					),
 					ListChild(
-						components.ListItemChat(DBPtr.RegisteredUsers[0], &chat_items_clickable[3]),
+						widgets.ListItemChat(&chat_items_clickable[3]),
 					),
 					ListChild(
-						components.ListItemChat2(DBPtr.RegisteredUsers[0]),
+						widgets.ListItemChat2(gui.DBPtr.RegisteredUsers[0]),
 					),
 					ListChild(
-						components.ListItemChat(DBPtr.RegisteredUsers[0], &chat_items_clickable[4]),
+						widgets.ListItemChat(&chat_items_clickable[4]),
 					),
 					ListChild(
-						components.ListItemChat2(DBPtr.RegisteredUsers[0]),
+						widgets.ListItemChat2(gui.DBPtr.RegisteredUsers[0]),
 					),
 					ListChild(
-						components.ListItemChat(DBPtr.RegisteredUsers[0], &chat_items_clickable[5]),
+						widgets.ListItemChat(&chat_items_clickable[5]),
 					),
 					ListChild(
-						components.ListItemChat2(DBPtr.RegisteredUsers[0]),
+						widgets.ListItemChat2(gui.DBPtr.RegisteredUsers[0]),
 					),
 				),
 			),

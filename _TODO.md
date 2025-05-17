@@ -19,3 +19,22 @@
 ## Final release of v0.1
 - [ ] [!] Build in Release mode
 - [ ] Take the .apk on USB drive
+
+
+## Font
+- "Inject" Nerd font icons into CallunaSans font
+
+
+# After v0.1
+- [ ] Make back button in chat with bigger hitbox
+- [ ] Add GIF support
+- [ ] Add Vector image support
+
+### Per chat shared customizations
+- [ ] Custom chat background
+- [ ] Custom style of chat message bubbles
+- [ ] Custom emojis (like Discord for example)
+- [ ] Custom style of message input box
+- [ ] Custom GIFs
+- [ ] Custom font
+- [ ] Custom icons (like on buttons or in input box)

@@ -1,4 +1,4 @@
-package components
+package widgets
 
 import (
 	// Added for defining custom colors if needed
@@ -27,11 +27,11 @@ var chat_msg richtext.InteractiveText
 var chat_time richtext.InteractiveText
 
 // ListItemChat now accepts a user and a clickable to manage its state.
-func ListItemChat(loggedUser db.User, clickable *widget.Clickable) layout.Widget {
+func ListItemChat(clickable *widget.Clickable) layout.Widget {
 	return func(gtx layout.Context) layout.Dimensions {
 		if clickable.Clicked(gtx) {
 			log.Debug().Msg("Switched to chat page")
-			pages.AppState.CurrentPage = pages.ChatPage
+			gui.AppState.CurrentPage = pages.ChatPage
 			gtx.Execute(op.InvalidateCmd{})
 		}
 
@@ -41,13 +41,13 @@ func ListItemChat(loggedUser db.User, clickable *widget.Clickable) layout.Widget
 				paint.FillShape(gtx.Ops, hover_back, clip.Rect{Max: gtx.Constraints.Max}.Op())
 			}
 
-			return chatItemContent(gtx, loggedUser)(gtx)
+			return chatItemContent(gtx)(gtx)
 		})
 	}
 }
 
 // chatItemContent contains the original drawing logic for the chat item.
-func chatItemContent(gtx layout.Context, loggedUser db.User) layout.Widget {
+func chatItemContent(gtx layout.Context) layout.Widget {
 	return Margin(&MarginOpts{Left: 20, Right: 20},
 		FlexBox(FlexBoxOpts{},
 			FlexChild(&FlexChildOpts{H: 76}, // Ensure this height matches clickable area or vice-versa
@@ -56,7 +56,22 @@ func chatItemContent(gtx layout.Context, loggedUser db.User) layout.Widget {
 					FlexChild(&FlexChildOpts{W: 54},
 						StackBox(StackBoxOpts{Alignment: Center},
 							StackedChild(
-								Circle(CircleOpts{R: 27, Color: LightRed, ImgURL: loggedUser.ProfilePictureURL}),
+								func() layout.Widget {
+									var pictureURL string
+
+									for _, member := range gui.AppState.LoggedUser.Chats[0].Members {
+										// Find the other member
+										if member.Username != gui.AppState.LoggedUser.Username {
+											pictureURL = member.ProfilePictureURL
+										}
+									}
+
+									return Circle(CircleOpts{
+										R:      27,
+										Color:  LightRed,
+										ImgURL: pictureURL,
+									})
+								}(),
 							),
 						),
 					),
@@ -69,12 +84,23 @@ func chatItemContent(gtx layout.Context, loggedUser db.User) layout.Widget {
 										// Chat header (Friend`s name)
 										FlexChild(nil,
 											Text(TextOpts{ThemePtr: gui.MyTheme, TextState: &chat_name},
-												TextSpan(SpanStyle{
-													Font:    gui.Fonts[1].Font,
-													Size:    18,
-													Color:   White,
-													Content: loggedUser.Chats[0].Members[0].Username,
-												}),
+												func() richtext.SpanStyle {
+													var title string
+
+													for _, member := range gui.AppState.LoggedUser.Chats[0].Members {
+														// Find the other member
+														if member.Username != gui.AppState.LoggedUser.Username {
+															title = member.Username
+														}
+													}
+
+													return TextSpan(SpanStyle{
+														Font:    gui.Fonts[1].Font,
+														Size:    18,
+														Color:   White,
+														Content: title,
+													})
+												}(),
 											),
 										),
 										// Last chat message
@@ -86,7 +112,7 @@ func chatItemContent(gtx layout.Context, loggedUser db.User) layout.Widget {
 															Font:    gui.Fonts[0].Font,
 															Size:    16,
 															Color:   Gray, // ezio.Gray
-															Content: loggedUser.Chats[0].Messages[len(loggedUser.Chats[0].Messages)-1].Message,
+															Content: gui.AppState.LoggedUser.Chats[0].Messages[len(gui.AppState.LoggedUser.Chats[0].Messages)-1].Message,
 														}),
 													),
 												),
@@ -97,7 +123,7 @@ func chatItemContent(gtx layout.Context, loggedUser db.User) layout.Widget {
 																Font:    gui.Fonts[0].Font,
 																Size:    16,
 																Color:   Gray, // ezio.Gray
-																Content: loggedUser.Chats[0].Messages[len(loggedUser.Chats[0].Messages)-1].Timestamp.Format("15:04"),
+																Content: gui.AppState.LoggedUser.Chats[0].Messages[len(gui.AppState.LoggedUser.Chats[0].Messages)-1].Timestamp.Format("15:04"),
 															}),
 														),
 													),

@@ -7,11 +7,3 @@ const (
 	ChatPage
 	SettingsPage
 )
-
-type ezAppState struct {
-	CurrentPage Page
-}
-
-var AppState = &ezAppState{
-	CurrentPage: OverviewPage,
-}

@@ -18,28 +18,6 @@ func Text(opts TextOpts, spans ...richtext.SpanStyle) layout.Widget {
 		// // and not only button RELEASE event by default
 		// richtext.LongPressDuration = 0
 
-		for {
-			span, event, ok := opts.TextState.Update(gtx)
-			if !ok {
-				break
-			}
-			content, _ := span.Content()
-			switch event.Type {
-			case richtext.Click:
-				log.Debug().Msgf("RichText Clicked: %s", event.ClickData.Kind)
-				// if event.ClickData.Kind == gesture.KindClick {
-				// 	interactColorIndex++
-				// 	gtx.Execute(op.InvalidateCmd{})
-				// }
-			case richtext.Hover:
-				log.Debug().Msgf("Hovered: %s", content)
-			case richtext.Unhover:
-				log.Debug().Msgf("Unhovered: %s", content)
-			case richtext.LongPress:
-				log.Debug().Msgf("Long-pressed: %s", content)
-			}
-		}
-
 		return richtext.Text(opts.TextState, opts.ThemePtr.Shaper, spans...).Layout(gtx)
 	}
 }
