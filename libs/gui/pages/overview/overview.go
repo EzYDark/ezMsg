@@ -18,7 +18,7 @@ func Overview(gtx layout.Context) {
 	FlexBox(FlexBoxOpts{Axis: Vertical},
 		// App header
 		FlexChild(&FlexChildOpts{H: 70},
-			Rect(RectOpts{Color: DarkBackground}),
+			Rect(RectOpts{Color: DarkBackground.NRGBA()}),
 			Margin(&MarginOpts{All: 20},
 				FlexBox(FlexBoxOpts{Axis: Horizontal},
 					FlexChild(&FlexChildOpts{Weight: 1},
@@ -26,20 +26,20 @@ func Overview(gtx layout.Context) {
 							TextSpan(SpanStyle{
 								Content: "Ez",
 								Font:    gui.Fonts[1].Font,
-								Color:   White,
+								Color:   White.NRGBA(),
 								Size:    unit.Sp(36),
 							}),
 							TextSpan(SpanStyle{
 								Content: "Msg",
 								Font:    gui.Fonts[1].Font,
-								Color:   White,
+								Color:   White.NRGBA(),
 								Size:    unit.Sp(36),
 							}),
 						),
 					),
 					FlexChild(&FlexChildOpts{Weight: 1},
 						DirectionBox(&DirectionBoxOpts{Direction: SE},
-							Rect(RectOpts{Color: LightGreen, W: 24, H: 24}),
+							Rect(RectOpts{Color: LightGreen.NRGBA(), W: 24, H: 24}),
 						),
 					),
 				),
@@ -47,7 +47,7 @@ func Overview(gtx layout.Context) {
 		),
 		// App main content
 		FlexChild(&FlexChildOpts{Weight: 1},
-			Rect(RectOpts{Color: DarkBackground}),
+			Rect(RectOpts{Color: DarkBackground.NRGBA()}),
 			Margin(&MarginOpts{Top: 20, Bottom: 20},
 				ListBox(ListOpts{ListPtr: &list_state, Axis: Vertical},
 					ListChild(

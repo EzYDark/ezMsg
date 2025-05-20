@@ -6,17 +6,11 @@ import (
 
 type BackgroundBoxOpts struct {
 	Alignment layout.Direction
+	// Add other options like spacing if needed in the future
 }
 
-func BackgroundBox(opts BackgroundBoxOpts, bgWidget layout.Widget, fgWidgets ...layout.Widget) layout.Widget {
+func BackgroundBox(opts BackgroundBoxOpts, bgWidget layout.Widget, fgWidgets layout.Widget) layout.Widget {
 	return func(gtx layout.Context) layout.Dimensions {
-		backgroundAsExpandedChild := ExpandedChild(bgWidget)
-		foregroundAsStackedChild := StackedChild(fgWidgets...)
-
-		stackBehaviorOptions := StackBoxOpts{
-			Alignment: opts.Alignment,
-		}
-
-		return StackBox(stackBehaviorOptions, backgroundAsExpandedChild, foregroundAsStackedChild)(gtx)
+		return layout.Background{}.Layout(gtx, bgWidget, fgWidgets)
 	}
 }

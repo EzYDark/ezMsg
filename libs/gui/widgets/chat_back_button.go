@@ -30,7 +30,7 @@ func BackButton(backButtonState *richtext.InteractiveText) layout.Widget {
 			TextSpan(SpanStyle{
 				Font:        gui.FontsNerd[0].Font,
 				Size:        30,
-				Color:       White,
+				Color:       White.NRGBA(),
 				Interactive: true,
 				Content:     "", // Back arrow icon from Nerd font
 			}),

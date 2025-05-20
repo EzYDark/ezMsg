@@ -10,10 +10,20 @@ import (
 
 var chatTitleState richtext.InteractiveText
 var backButtonState richtext.InteractiveText
+var chatListState layout.List
 
 func Chat(gtx layout.Context) {
+	activeChat := gui.AppState.LoggedUser.Chats[0] // Or however you determine the current chat
+
+	// Prepare ListChild widgets from messages
+	var chatMessageChildren []layout.ListElement
+	for i, msg := range activeChat.Messages {
+		// Each message becomes a ListChild containing the ChatMessageWidget
+		chatMessageChildren = append(chatMessageChildren, ListChild(widgets.ChatMessage(msg, i)))
+	}
+
 	BackgroundBox(BackgroundBoxOpts{},
-		Rect(RectOpts{Color: DarkBackground}),
+		Rect(RectOpts{Color: DarkBackground.NRGBA()}),
 		Margin(&MarginOpts{All: 20},
 			FlexBox(FlexBoxOpts{Axis: Vertical},
 				// Header
@@ -42,7 +52,7 @@ func Chat(gtx layout.Context) {
 										return TextSpan(SpanStyle{
 											Font:    gui.Fonts[1].Font,
 											Size:    20,
-											Color:   White,
+											Color:   White.NRGBA(),
 											Content: title,
 										})
 									}(),
@@ -55,11 +65,17 @@ func Chat(gtx layout.Context) {
 				),
 				// Chat
 				FlexChild(&FlexChildOpts{Weight: 1},
-					Rect(RectOpts{Color: LightPurple}),
+					ListBox(ListOpts{
+						ListPtr:     &chatListState,
+						Axis:        Vertical,
+						ScrollToEnd: true,
+					},
+						chatMessageChildren...,
+					),
 				),
 				// Footer (Input box)
 				FlexChild(&FlexChildOpts{H: 70},
-					Rect(RectOpts{Color: LightOrange}),
+					Rect(RectOpts{Color: LightOrange.NRGBA()}),
 				),
 			),
 		),

@@ -24,10 +24,10 @@ func Rect(opts RectOpts) layout.Widget {
 		min_h := gtx.Dp(opts.MinH)
 
 		if w <= 0 {
-			w = gtx.Constraints.Max.X
+			w = gtx.Constraints.Min.X
 		}
 		if h <= 0 {
-			h = gtx.Constraints.Max.Y
+			h = gtx.Constraints.Min.Y
 		}
 
 		if opts.MinW > 0 && w < min_w {

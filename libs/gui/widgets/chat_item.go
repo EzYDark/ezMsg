@@ -50,7 +50,7 @@ func ListItemChat(clickable *widget.Clickable) layout.Widget {
 func chatItemContent(gtx layout.Context) layout.Widget {
 	return Margin(&MarginOpts{Left: 20, Right: 20},
 		FlexBox(FlexBoxOpts{},
-			FlexChild(&FlexChildOpts{H: 76}, // Ensure this height matches clickable area or vice-versa
+			FlexChild(&FlexChildOpts{H: 76},
 				FlexBox(FlexBoxOpts{Axis: Horizontal},
 					// Profile picture space
 					FlexChild(&FlexChildOpts{W: 54},
@@ -68,7 +68,7 @@ func chatItemContent(gtx layout.Context) layout.Widget {
 
 									return Circle(CircleOpts{
 										R:      27,
-										Color:  LightRed,
+										Color:  LightRed.NRGBA(),
 										ImgURL: pictureURL,
 									})
 								}(),
@@ -97,7 +97,7 @@ func chatItemContent(gtx layout.Context) layout.Widget {
 													return TextSpan(SpanStyle{
 														Font:    gui.Fonts[1].Font,
 														Size:    18,
-														Color:   White,
+														Color:   White.NRGBA(),
 														Content: title,
 													})
 												}(),
@@ -111,7 +111,7 @@ func chatItemContent(gtx layout.Context) layout.Widget {
 														TextSpan(SpanStyle{
 															Font:    gui.Fonts[0].Font,
 															Size:    16,
-															Color:   Gray, // ezio.Gray
+															Color:   Gray.NRGBA(), // ezio.Gray
 															Content: gui.AppState.LoggedUser.Chats[0].Messages[len(gui.AppState.LoggedUser.Chats[0].Messages)-1].Message,
 														}),
 													),
@@ -122,7 +122,7 @@ func chatItemContent(gtx layout.Context) layout.Widget {
 															TextSpan(SpanStyle{
 																Font:    gui.Fonts[0].Font,
 																Size:    16,
-																Color:   Gray, // ezio.Gray
+																Color:   Gray.NRGBA(), // ezio.Gray
 																Content: gui.AppState.LoggedUser.Chats[0].Messages[len(gui.AppState.LoggedUser.Chats[0].Messages)-1].Timestamp.Format("15:04"),
 															}),
 														),
@@ -148,10 +148,10 @@ func ListItemChat2(loggedUser db.User) layout.Widget {
 			FlexChild(&FlexChildOpts{H: 70},
 				FlexBox(FlexBoxOpts{Axis: Horizontal},
 					FlexChild(&FlexChildOpts{Weight: 1},
-						Rect(RectOpts{Color: Blue}),
+						Rect(RectOpts{Color: Blue.NRGBA()}),
 					),
 					FlexChild(&FlexChildOpts{Weight: 1},
-						Rect(RectOpts{Color: Orange}),
+						Rect(RectOpts{Color: Orange.NRGBA()}),
 					),
 				),
 			),
