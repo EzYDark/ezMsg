@@ -11,114 +11,59 @@ import (
 	"github.com/ezydark/ezMsg/libs/gui"
 )
 
-// func ChatMessageOld(message db.Message) layout.Widget {
-// 	var localMessageTextState richtext.InteractiveText
-// 	var localSenderTextState richtext.InteractiveText
+func ChatMsgBubble(message db.Message, index int) layout.Widget {
+	isLoggedUser := message.User.Username == gui.AppState.LoggedUser.Username
 
-// 	return func(gtx layout.Context) layout.Dimensions {
-// 		isCurrentUser := message.User.Username == gui.AppState.LoggedUser.Username
-// 		// messageAlignment := W
-// 		bubbleColor := color.NRGBA{R: 0x4A, G: 0x4A, B: 0x4A, A: 0xFF} // Other user's message bubble
-// 		textColor := White
+	var messageTextState richtext.InteractiveText
+	var senderTextStae richtext.InteractiveText
 
-// 		if isCurrentUser {
-// 			// messageAlignment = E
-// 			bubbleColor = color.NRGBA{R: 0x00, G: 0x7A, B: 0xFF, A: 0xFF} // Current user's message bubble
-// 		}
+	var msgAlignment layout.Alignment
+	var msgDirection layout.Direction
 
-// 		messageContent := FlexBox(FlexBoxOpts{Axis: Vertical},
-// 			FlexChild(nil,
-// 				Margin(&MarginOpts{Bottom: unit.Dp(2), Left: unit.Dp(8), Right: unit.Dp(8), Top: unit.Dp(5)},
-// 					Text(TextOpts{ThemePtr: gui.MyTheme, TextState: &localSenderTextState},
-// 						TextSpan(SpanStyle{
-// 							Content: message.User.Username,
-// 							Font:    gui.Fonts[1].Font,
-// 							Size:    unit.Sp(14),
-// 							Color:   LightGray.NRGBA(),
-// 						}),
-// 					),
-// 				),
-// 			),
-// 			FlexChild(nil,
-// 				Margin(&MarginOpts{Bottom: unit.Dp(5), Left: unit.Dp(8), Right: unit.Dp(8)},
-// 					Text(TextOpts{ThemePtr: gui.MyTheme, TextState: &localMessageTextState},
-// 						TextSpan(SpanStyle{
-// 							Content: message.Message,
-// 							Font:    gui.Fonts[0].Font,
-// 							Size:    unit.Sp(16),
-// 							Color:   textColor.NRGBA(),
-// 						}),
-// 					),
-// 				),
-// 			),
-// 		)
+	var bubbleColor color.NRGBA
 
-// 		return FlexBox(FlexBoxOpts{Axis: Horizontal},
-// 			FlexChild(&FlexChildOpts{Weight: 1},
-// 				FlexBox(FlexBoxOpts{Axis: Vertical},
-// 					FlexChild(&FlexChildOpts{MaxW: 50},
-// 						Rect(RectOpts{Color: bubbleColor}),
-// 						messageContent,
-// 					),
-// 				),
-// 			),
-// 		)(gtx)
-// 	}
-// }
-
-func ChatMessage(message db.Message, i int) layout.Widget {
-	var localMessageTextState richtext.InteractiveText
-	var localSenderTextState richtext.InteractiveText
+	if isLoggedUser {
+		// Current user's message bubble
+		msgAlignment = layout.End
+		msgDirection = layout.E
+		bubbleColor = color.NRGBA{R: 0x00, G: 0x7A, B: 0xFF, A: 0xFF}
+	} else {
+		// Other user's message bubble
+		msgAlignment = layout.Start
+		msgDirection = layout.W
+		bubbleColor = color.NRGBA{R: 0x4A, G: 0x4A, B: 0x4A, A: 0xFF}
+	}
 
 	return func(gtx layout.Context) layout.Dimensions {
-		isCurrentUser := message.User.Username == gui.AppState.LoggedUser.Username
-		var isRight = layout.W
-		bubbleColor := color.NRGBA{R: 0x4A, G: 0x4A, B: 0x4A, A: 0xFF} // Other user's message bubble
-		textColor := White
-
-		if isCurrentUser {
-			isRight = layout.E
-			bubbleColor = color.NRGBA{R: 0x00, G: 0x7A, B: 0xFF, A: 0xFF} // Current user's message bubble
-		}
-
-		messageContent := FlexBox(FlexBoxOpts{Axis: Vertical},
-			FlexChild(nil,
-				Margin(&MarginOpts{Bottom: unit.Dp(2), Left: unit.Dp(8), Right: unit.Dp(8), Top: unit.Dp(5)},
-					Text(TextOpts{ThemePtr: gui.MyTheme, TextState: &localSenderTextState},
-						TextSpan(SpanStyle{
-							Content: message.User.Username,
-							Font:    gui.Fonts[1].Font,
-							Size:    unit.Sp(14),
-							Color:   LightGray.NRGBA(),
-						}),
-					),
-				),
-			),
-			FlexChild(nil,
-				Margin(&MarginOpts{Bottom: unit.Dp(5), Left: unit.Dp(8), Right: unit.Dp(8)},
-					Text(TextOpts{ThemePtr: gui.MyTheme, TextState: &localMessageTextState},
-						TextSpan(SpanStyle{
-							Content: message.Message,
-							Font:    gui.Fonts[0].Font,
-							Size:    unit.Sp(16),
-							Color:   textColor.NRGBA(),
-						}),
-					),
-				),
-			),
-		)
-
-		return FlexBox(FlexBoxOpts{Axis: Horizontal},
-			FlexChild(&FlexChildOpts{H: 50},
-				FlexBox(FlexBoxOpts{Axis: Horizontal},
-					FlexChild(&FlexChildOpts{Weight: 1},
-						// Rect(RectOpts{Color: colors.GetLightNRGBA(i)}),
-						DirectionBox(&DirectionBoxOpts{Direction: isRight},
-							FlexBox(FlexBoxOpts{Axis: Horizontal},
-								FlexChild(nil,
-									BackgroundBox(BackgroundBoxOpts{},
-										Rect(RectOpts{Color: bubbleColor}),
-										messageContent,
+		return Margin(&MarginOpts{Bottom: 8},
+			FlexBox(FlexBoxOpts{Axis: Vertical, Alignment: msgAlignment},
+				FlexChild(nil,
+					FlexBox(FlexBoxOpts{Axis: Vertical, Alignment: End},
+						// Sender of the message
+						FlexChild(nil,
+							DirectionBox(&DirectionBoxOpts{Direction: msgDirection},
+								Text(TextOpts{ThemePtr: gui.MyTheme, TextState: &senderTextStae},
+									TextSpan(SpanStyle{
+										Content: message.User.Username,
+										Font:    gui.Fonts[1].Font,
+										Size:    unit.Sp(14),
+										Color:   LightGray.NRGBA(),
+									}),
+								),
+							),
+						),
+						// The text message
+						FlexChild(nil,
+							BackgroundStackBox(StackBoxOpts{Alignment: msgDirection},
+								Rect(RectOpts{Color: bubbleColor}),
+								Margin(&MarginOpts{Top: 6, Bottom: 6, Left: 12, Right: 12},
+									Text(TextOpts{ThemePtr: gui.MyTheme, TextState: &messageTextState},
+										TextSpan(SpanStyle{
+											Content: message.Message,
+											Font:    gui.Fonts[0].Font,
+											Size:    unit.Sp(16),
+											Color:   White.NRGBA(),
+										}),
 									),
 								),
 							),

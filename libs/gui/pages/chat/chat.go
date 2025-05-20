@@ -13,16 +13,14 @@ var backButtonState richtext.InteractiveText
 var chatListState layout.List
 
 func Chat(gtx layout.Context) {
-	activeChat := gui.AppState.LoggedUser.Chats[0] // Or however you determine the current chat
+	activeChat := gui.AppState.LoggedUser.Chats[0]
 
-	// Prepare ListChild widgets from messages
-	var chatMessageChildren []layout.ListElement
+	var msgWidgets []layout.ListElement
 	for i, msg := range activeChat.Messages {
-		// Each message becomes a ListChild containing the ChatMessageWidget
-		chatMessageChildren = append(chatMessageChildren, ListChild(widgets.ChatMessage(msg, i)))
+		msgWidgets = append(msgWidgets, ListChild(widgets.ChatMsgBubble(msg, i)))
 	}
 
-	BackgroundBox(BackgroundBoxOpts{},
+	BackgroundBox(
 		Rect(RectOpts{Color: DarkBackground.NRGBA()}),
 		Margin(&MarginOpts{All: 20},
 			FlexBox(FlexBoxOpts{Axis: Vertical},
@@ -70,7 +68,7 @@ func Chat(gtx layout.Context) {
 						Axis:        Vertical,
 						ScrollToEnd: true,
 					},
-						chatMessageChildren...,
+						msgWidgets...,
 					),
 				),
 				// Footer (Input box)

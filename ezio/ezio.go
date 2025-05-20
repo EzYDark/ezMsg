@@ -105,9 +105,8 @@ var (
 )
 
 // Re-export Background layout
-type BackgroundBoxOpts = layouts.BackgroundBoxOpts
-
 var BackgroundBox = layouts.BackgroundBox
+var BackgroundStackBox = layouts.BackgroundStackBox
 
 // Re-export: List layout
 type ListOpts = layouts.ListOpts
