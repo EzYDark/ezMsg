@@ -79,12 +79,24 @@ func Chat(gtx layout.Context) {
 				FlexChild(&FlexChildOpts{H: 70},
 					BackgroundBox(
 						Rect(RectOpts{Color: LightOrange.NRGBA()}),
-						Margin(&MarginOpts{All: 6},
-							Input(InputOpts{
-								EditorPtr: &inputBoxState,
-								ThemePtr:  gui.MyTheme,
-								Hint:      "Enter your message here...",
-							}),
+						FlexBox(&FlexBoxOpts{Axis: Horizontal, Spacing: SpaceBetween},
+							// Message input box
+							FlexChild(nil,
+								Margin(&MarginOpts{All: 6},
+									Input(InputOpts{
+										EditorPtr: &inputBoxState,
+										ThemePtr:  gui.MyTheme,
+										Hint:      "Enter your message here...",
+									}),
+								),
+							),
+							// Add button for attachments
+							FlexChild(nil,
+								// TODO: Add hover effect on the Add button
+								Margin(&MarginOpts{Top: 1, Right: 8},
+									widgets.AddButton(&backButtonState),
+								),
+							),
 						),
 					),
 				),

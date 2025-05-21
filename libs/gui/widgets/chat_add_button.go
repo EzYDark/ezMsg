@@ -10,10 +10,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func BackButton(backButtonState *richtext.InteractiveText) layout.Widget {
+func AddButton(buttonState *richtext.InteractiveText) layout.Widget {
 	return func(gtx layout.Context) layout.Dimensions {
 		for {
-			_, event, ok := backButtonState.Update(gtx)
+			_, event, ok := buttonState.Update(gtx)
 			if !ok {
 				break
 			}
@@ -25,13 +25,13 @@ func BackButton(backButtonState *richtext.InteractiveText) layout.Widget {
 			}
 		}
 
-		return Text(TextOpts{ThemePtr: gui.MyTheme, TextState: backButtonState},
+		return Text(TextOpts{ThemePtr: gui.MyTheme, TextState: buttonState},
 			TextSpan(SpanStyle{
 				Font:        gui.FontsNerd[0].Font,
 				Size:        30,
-				Color:       White.NRGBA(),
+				Color:       Gray.NRGBA(),
 				Interactive: true,
-				Content:     "󰁍", // Back arrow icon from Nerd font
+				Content:     "󰐕", // Plus icon from Nerd font
 			}),
 		)(gtx)
 	}
