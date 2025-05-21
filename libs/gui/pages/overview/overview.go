@@ -15,12 +15,12 @@ var list_state layout.List
 var chat_items_clickable [10]widget.Clickable
 
 func Overview(gtx layout.Context) {
-	FlexBox(FlexBoxOpts{Axis: Vertical},
+	FlexBox(&FlexBoxOpts{Axis: Vertical},
 		// App header
 		FlexChild(&FlexChildOpts{H: 70},
 			Rect(RectOpts{Color: DarkBackground.NRGBA()}),
 			Margin(&MarginOpts{All: 20},
-				FlexBox(FlexBoxOpts{Axis: Horizontal},
+				FlexBox(&FlexBoxOpts{Axis: Horizontal},
 					FlexChild(&FlexChildOpts{Weight: 1},
 						Text(TextOpts{ThemePtr: gui.MyTheme, TextState: &text_state},
 							TextSpan(SpanStyle{
@@ -38,7 +38,7 @@ func Overview(gtx layout.Context) {
 						),
 					),
 					FlexChild(&FlexChildOpts{Weight: 1},
-						DirectionBox(&DirectionBoxOpts{Direction: SE},
+						Align(&AlignOpts{Alignment: SE},
 							Rect(RectOpts{Color: LightGreen.NRGBA(), W: 24, H: 24}),
 						),
 					),

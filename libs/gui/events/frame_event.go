@@ -1,9 +1,6 @@
 package gui
 
 import (
-
-	// For debugging output
-
 	gio_app "gioui.org/app"
 	"gioui.org/op"
 	"github.com/ezydark/ezMsg/libs/gui"
@@ -12,7 +9,6 @@ import (
 	"github.com/ezydark/ezMsg/libs/gui/pages/overview"
 )
 
-// HandleFrameEvent remains the same
 func HandleFrameEvent(event gio_app.FrameEvent) {
 	var ops op.Ops
 	gtx := gio_app.NewContext(&ops, event)

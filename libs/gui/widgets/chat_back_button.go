@@ -10,7 +10,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// ListItemChat now accepts a user and a clickable to manage its state.
 func BackButton(backButtonState *richtext.InteractiveText) layout.Widget {
 	return func(gtx layout.Context) layout.Dimensions {
 		for {

@@ -2,11 +2,13 @@ package layouts
 
 import "gioui.org/layout"
 
-type StackBoxOpts struct {
-	Alignment layout.Direction
-}
+type StackBoxOpts = layout.Stack
 
-func StackBox(opts StackBoxOpts, children ...layout.StackChild) layout.Widget {
+func StackBox(opts *StackBoxOpts, children ...layout.StackChild) layout.Widget {
+	if opts == nil {
+		opts = &StackBoxOpts{}
+	}
+
 	return func(gtx layout.Context) layout.Dimensions {
 		return layout.Stack{Alignment: opts.Alignment}.Layout(gtx, children...)
 	}

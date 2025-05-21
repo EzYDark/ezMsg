@@ -1,8 +1,8 @@
 package fonts
 
 import (
-	"io"       // Added for reading response body
-	"net/http" // Added for HTTP requests
+	"io"
+	"net/http"
 	"os"
 
 	"gioui.org/font"
@@ -31,20 +31,16 @@ func LoadFontFile(path string) []byte {
 
 // LoadFontURL fetches a font file from a URL.
 func LoadFontURL(url string) []byte {
-	// Why: Make an HTTP GET request to the specified URL.
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Fatal().Msgf("Failed to get font from URL %s: %v", url, err)
 	}
-	// Why: Ensure the response body is closed after the function finishes.
 	defer resp.Body.Close()
 
-	// Why: Check if the HTTP request was successful.
 	if resp.StatusCode != http.StatusOK {
 		log.Fatal().Msgf("Failed to download font from URL %s: status code %d", url, resp.StatusCode)
 	}
 
-	// Why: Read all data from the response body.
 	fontBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatal().Msgf("Failed to read font data from URL %s: %v", url, err)

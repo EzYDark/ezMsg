@@ -1,22 +1,17 @@
 package widgets
 
 import (
-	// Added for defining custom colors if needed
-
-	// Added for click logging
-
 	"image/color"
 
-	"gioui.org/layout" // Added for clipping the background shape
+	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 
-	// Added for painting the background
-	"gioui.org/widget" // Added for widget.Clickable
+	"gioui.org/widget"
 	"gioui.org/x/richtext"
 	"github.com/ezydark/ezMsg/app/db"
-	. "github.com/ezydark/ezMsg/ezio" // Assuming ezio re-exports colors like White, Gray, etc.
+	. "github.com/ezydark/ezMsg/ezio"
 	"github.com/ezydark/ezMsg/libs/gui"
 	"github.com/ezydark/ezMsg/libs/gui/pages"
 	"github.com/rs/zerolog/log"
@@ -26,7 +21,6 @@ var chat_name richtext.InteractiveText
 var chat_msg richtext.InteractiveText
 var chat_time richtext.InteractiveText
 
-// ListItemChat now accepts a user and a clickable to manage its state.
 func ListItemChat(clickable *widget.Clickable) layout.Widget {
 	return func(gtx layout.Context) layout.Dimensions {
 		if clickable.Clicked(gtx) {
@@ -46,15 +40,14 @@ func ListItemChat(clickable *widget.Clickable) layout.Widget {
 	}
 }
 
-// chatItemContent contains the original drawing logic for the chat item.
 func chatItemContent(gtx layout.Context) layout.Widget {
 	return Margin(&MarginOpts{Left: 20, Right: 20},
-		FlexBox(FlexBoxOpts{},
+		FlexBox(&FlexBoxOpts{},
 			FlexChild(&FlexChildOpts{H: 76},
-				FlexBox(FlexBoxOpts{Axis: Horizontal},
+				FlexBox(&FlexBoxOpts{Axis: Horizontal},
 					// Profile picture space
 					FlexChild(&FlexChildOpts{W: 54},
-						StackBox(StackBoxOpts{Alignment: Center},
+						StackBox(&StackBoxOpts{Alignment: Center},
 							StackedChild(
 								func() layout.Widget {
 									var pictureURL string
@@ -78,9 +71,9 @@ func chatItemContent(gtx layout.Context) layout.Widget {
 					// Chat information space
 					FlexChild(&FlexChildOpts{Weight: 8.5},
 						Margin(&MarginOpts{Left: 16},
-							StackBox(StackBoxOpts{Alignment: W},
+							StackBox(&StackBoxOpts{Alignment: W},
 								StackedChild(
-									FlexBox(FlexBoxOpts{Axis: Vertical},
+									FlexBox(&FlexBoxOpts{Axis: Vertical},
 										// Chat header (Friend`s name)
 										FlexChild(nil,
 											Text(TextOpts{ThemePtr: gui.MyTheme, TextState: &chat_name},
@@ -105,13 +98,13 @@ func chatItemContent(gtx layout.Context) layout.Widget {
 										),
 										// Last chat message
 										FlexChild(nil,
-											FlexBox(FlexBoxOpts{Axis: Horizontal},
+											FlexBox(&FlexBoxOpts{Axis: Horizontal},
 												FlexChild(nil,
 													Text(TextOpts{ThemePtr: gui.MyTheme, TextState: &chat_msg},
 														TextSpan(SpanStyle{
 															Font:    gui.Fonts[0].Font,
 															Size:    16,
-															Color:   Gray.NRGBA(), // ezio.Gray
+															Color:   Gray.NRGBA(),
 															Content: gui.AppState.LoggedUser.Chats[0].Messages[len(gui.AppState.LoggedUser.Chats[0].Messages)-1].Message,
 														}),
 													),
@@ -122,7 +115,7 @@ func chatItemContent(gtx layout.Context) layout.Widget {
 															TextSpan(SpanStyle{
 																Font:    gui.Fonts[0].Font,
 																Size:    16,
-																Color:   Gray.NRGBA(), // ezio.Gray
+																Color:   Gray.NRGBA(),
 																Content: gui.AppState.LoggedUser.Chats[0].Messages[len(gui.AppState.LoggedUser.Chats[0].Messages)-1].Timestamp.Format("15:04"),
 															}),
 														),
@@ -141,12 +134,11 @@ func chatItemContent(gtx layout.Context) layout.Widget {
 	)
 }
 
-// ListItemChat2 remains unchanged for now, but you can apply similar logic if needed.
 func ListItemChat2(loggedUser db.User) layout.Widget {
 	return Margin(&MarginOpts{Left: 20, Right: 20},
-		FlexBox(FlexBoxOpts{},
+		FlexBox(&FlexBoxOpts{},
 			FlexChild(&FlexChildOpts{H: 70},
-				FlexBox(FlexBoxOpts{Axis: Horizontal},
+				FlexBox(&FlexBoxOpts{Axis: Horizontal},
 					FlexChild(&FlexChildOpts{Weight: 1},
 						Rect(RectOpts{Color: Blue.NRGBA()}),
 					),

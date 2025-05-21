@@ -36,12 +36,12 @@ func ChatMsgBubble(message db.Message, index int) layout.Widget {
 
 	return func(gtx layout.Context) layout.Dimensions {
 		return Margin(&MarginOpts{Bottom: 8},
-			FlexBox(FlexBoxOpts{Axis: Vertical, Alignment: msgAlignment},
+			FlexBox(&FlexBoxOpts{Axis: Vertical, Alignment: msgAlignment},
 				FlexChild(nil,
-					FlexBox(FlexBoxOpts{Axis: Vertical, Alignment: End},
+					FlexBox(&FlexBoxOpts{Axis: Vertical, Alignment: End},
 						// Sender of the message
 						FlexChild(nil,
-							DirectionBox(&DirectionBoxOpts{Direction: msgDirection},
+							Align(&AlignOpts{Alignment: msgDirection},
 								Text(TextOpts{ThemePtr: gui.MyTheme, TextState: &senderTextStae},
 									TextSpan(SpanStyle{
 										Content: message.User.Username,
@@ -54,7 +54,7 @@ func ChatMsgBubble(message db.Message, index int) layout.Widget {
 						),
 						// The text message
 						FlexChild(nil,
-							BackgroundStackBox(StackBoxOpts{Alignment: msgDirection},
+							BackgroundStackBox(&StackBoxOpts{Alignment: msgDirection},
 								Rect(RectOpts{Color: bubbleColor}),
 								Margin(&MarginOpts{Top: 6, Bottom: 6, Left: 12, Right: 12},
 									Text(TextOpts{ThemePtr: gui.MyTheme, TextState: &messageTextState},

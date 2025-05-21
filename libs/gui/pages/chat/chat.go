@@ -2,6 +2,7 @@ package chat
 
 import (
 	"gioui.org/layout"
+	"gioui.org/widget"
 	"gioui.org/x/richtext"
 	. "github.com/ezydark/ezMsg/ezio"
 	"github.com/ezydark/ezMsg/libs/gui"
@@ -11,6 +12,8 @@ import (
 var chatTitleState richtext.InteractiveText
 var backButtonState richtext.InteractiveText
 var chatListState layout.List
+
+var inputBoxState widget.Editor
 
 func Chat(gtx layout.Context) {
 	activeChat := gui.AppState.LoggedUser.Chats[0]
@@ -23,19 +26,19 @@ func Chat(gtx layout.Context) {
 	BackgroundBox(
 		Rect(RectOpts{Color: DarkBackground.NRGBA()}),
 		Margin(&MarginOpts{All: 20},
-			FlexBox(FlexBoxOpts{Axis: Vertical},
+			FlexBox(&FlexBoxOpts{Axis: Vertical},
 				// Header
 				FlexChild(&FlexChildOpts{H: 70},
-					FlexBox(FlexBoxOpts{Axis: Horizontal},
+					FlexBox(&FlexBoxOpts{Axis: Horizontal},
 						// Back button to Overview
 						FlexChild(&FlexChildOpts{Weight: 1},
-							DirectionBox(&DirectionBoxOpts{Direction: W},
+							Align(&StackBoxOpts{Alignment: W},
 								widgets.BackButton(&backButtonState),
 							),
 						),
 						// Chat title
 						FlexChild(&FlexChildOpts{Weight: 1},
-							DirectionBox(&DirectionBoxOpts{Direction: Center},
+							Align(&StackBoxOpts{Alignment: Center},
 								Text(TextOpts{ThemePtr: gui.MyTheme, TextState: &chatTitleState},
 									func() richtext.SpanStyle {
 										var title string
@@ -73,7 +76,16 @@ func Chat(gtx layout.Context) {
 				),
 				// Footer (Input box)
 				FlexChild(&FlexChildOpts{H: 70},
-					Rect(RectOpts{Color: LightOrange.NRGBA()}),
+					BackgroundBox(
+						Rect(RectOpts{Color: LightOrange.NRGBA()}),
+						Margin(&MarginOpts{All: 6},
+							Input(InputOpts{
+								EditorPtr: &inputBoxState,
+								ThemePtr:  gui.MyTheme,
+								Hint:      "Enter your message here...",
+							}),
+						),
+					),
 				),
 			),
 		),

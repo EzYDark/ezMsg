@@ -14,11 +14,11 @@ type MarginOpts struct {
 }
 
 func Margin(opts *MarginOpts, children ...layout.Widget) layout.Widget {
-	return func(gtx layout.Context) layout.Dimensions {
-		if opts == nil {
-			opts = &MarginOpts{}
-		}
+	if opts == nil {
+		opts = &MarginOpts{}
+	}
 
+	return func(gtx layout.Context) layout.Dimensions {
 		// Create a composite widget from all children
 		composite_widget := func(gtx layout.Context) layout.Dimensions {
 			var d layout.Dimensions

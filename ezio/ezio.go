@@ -117,9 +117,11 @@ var (
 )
 
 // Re-export: Direction layout
-type DirectionBoxOpts = layouts.DirectionBoxOpts
+type AlignOpts = layouts.AlignOpts
 
-var DirectionBox = layouts.DirectionBox
+var (
+	Align = layouts.Align
+)
 
 // Re-export: Margin layout
 type MarginOpts = layouts.MarginOpts

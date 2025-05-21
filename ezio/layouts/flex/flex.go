@@ -9,7 +9,11 @@ type FlexBoxOpts struct {
 	Alignment layout.Alignment
 }
 
-func FlexBox(opts FlexBoxOpts, children ...FlexChildOpts) layout.Widget {
+func FlexBox(opts *FlexBoxOpts, children ...FlexChildOpts) layout.Widget {
+	if opts == nil {
+		opts = &FlexBoxOpts{}
+	}
+
 	return func(gtx layout.Context) layout.Dimensions {
 		var kids []layout.FlexChild
 		for _, ch := range children {
