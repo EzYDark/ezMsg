@@ -29,34 +29,35 @@ func Chat(gtx layout.Context) {
 			FlexBox(&FlexBoxOpts{Axis: Vertical},
 				// Header
 				FlexChild(&FlexChildOpts{H: 70},
+					// Rect(RectOpts{Color: LightRed.NRGBA()}),
 					FlexBox(&FlexBoxOpts{Axis: Horizontal},
 						// Back button to Overview
 						FlexChild(&FlexChildOpts{Weight: 1},
-							Align(&StackBoxOpts{Alignment: W},
-								widgets.BackButton(&backButtonState),
-							),
+							widgets.BackButton(&backButtonState),
 						),
 						// Chat title
 						FlexChild(&FlexChildOpts{Weight: 1},
-							Align(&StackBoxOpts{Alignment: Center},
-								Text(TextOpts{ThemePtr: gui.MyTheme, TextState: &chatTitleState},
-									func() richtext.SpanStyle {
-										var title string
+							Align(&StackBoxOpts{Alignment: N},
+								Margin(&MarginOpts{Top: 5}, // TEMP fix of bad alignment with the Back button
+									Text(TextOpts{ThemePtr: gui.MyTheme, TextState: &chatTitleState},
+										func() richtext.SpanStyle {
+											var title string
 
-										for _, member := range gui.AppState.LoggedUser.Chats[0].Members {
-											// Find the other member
-											if member.Username != gui.AppState.LoggedUser.Username {
-												title = member.Username
+											for _, member := range gui.AppState.LoggedUser.Chats[0].Members {
+												// Find the other member
+												if member.Username != gui.AppState.LoggedUser.Username {
+													title = member.Username
+												}
 											}
-										}
 
-										return TextSpan(SpanStyle{
-											Font:    gui.Fonts[1].Font,
-											Size:    20,
-											Color:   White.NRGBA(),
-											Content: title,
-										})
-									}(),
+											return TextSpan(SpanStyle{
+												Font:    gui.Fonts[1].Font,
+												Size:    20,
+												Color:   White.NRGBA(),
+												Content: title,
+											})
+										}(),
+									),
 								),
 							),
 						),
