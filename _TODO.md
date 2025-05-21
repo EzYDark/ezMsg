@@ -7,14 +7,21 @@
 - [ ] Support for clicking URL links that opens default browser
         on the device
 - [ ] Time of the sent message (like "2 minutes ago" or atleast "23:44 19.4.2025")
-- [ ] Button to upload image and send them
+- [x] Button to upload/attach attachments to messages
+        - [ ] Add hover effect on the button
+        - [ ] Make the button functional
 - [x] Button to go back to Overview
-- [ ] [!] Notifications on when user receives message
+- [ ] [!] Push Notifications on when user receives message
 - [ ] [!] Save user data (loggedUser) on the device for properly selected user
             on app startup (temp)
 - [ ] [!] Saving data (chat history) on the server and be able
         to get the data from server
+- [ ] Save app`s window position on exit into config to
+        start app in the same position as last time
 
+- [ ] Custom Border for Rect, Circle etc.
+- [ ] Image support for Rect
+- [ ] Roudness support for Rect
 
 ## Final release of v0.1
 - [ ] [!] Build in Release mode
