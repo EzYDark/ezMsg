@@ -83,7 +83,7 @@ func Chat(gtx layout.Context) {
 						Rect(RectOpts{Color: color.NRGBA{R: uint8(193), G: uint8(193), B: uint8(193), A: uint8(5)}}),
 						FlexBox(&FlexBoxOpts{Axis: Horizontal, Spacing: SpaceBetween},
 							// Message input box
-							FlexChild(nil,
+							FlexChild(&FlexChildOpts{Weight: 1},
 								Margin(&MarginOpts{All: 6},
 									Input(InputOpts{
 										EditorPtr: &inputBoxState,
