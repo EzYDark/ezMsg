@@ -1,6 +1,8 @@
 package chat
 
 import (
+	"image/color"
+
 	"gioui.org/layout"
 	"gioui.org/widget"
 	"gioui.org/x/richtext"
@@ -78,7 +80,7 @@ func Chat(gtx layout.Context) {
 				// Footer (Input box)
 				FlexChild(&FlexChildOpts{H: 70},
 					BackgroundBox(
-						Rect(RectOpts{Color: LightOrange.NRGBA()}),
+						Rect(RectOpts{Color: color.NRGBA{R: uint8(193), G: uint8(193), B: uint8(193), A: uint8(5)}}),
 						FlexBox(&FlexBoxOpts{Axis: Horizontal, Spacing: SpaceBetween},
 							// Message input box
 							FlexChild(nil,

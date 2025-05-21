@@ -22,6 +22,7 @@
 - [ ] Custom Border for Rect, Circle etc.
 - [ ] Image support for Rect
 - [ ] Roudness support for Rect
+- [ ] "Clickable" widget for custom buttons and hover effects
 
 ## Final release of v0.1
 - [ ] [!] Build in Release mode
