@@ -66,7 +66,7 @@
 - [ ] Custom font
 - [ ] Custom icons (like on buttons or in input box)
 
-### Per chat "mini-apps"
+### Per chat "mini-apps" (https://g.co/gemini/share/6dd5982d3707)
 - [ ] A pet/s, that the members of the chat are taking care of (Tamagochi-like)
         - The members are just like a parents of the pet
         - Every member has its own "home" that the pet can be in
