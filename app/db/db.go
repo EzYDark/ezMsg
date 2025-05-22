@@ -38,7 +38,7 @@ func InitDB() *DB {
 	file1 := File{
 		ID:         1,
 		Sender:     &kheper_user,
-		URL:        "https://www.orchardroadanimalhospital.com/sites/default/files/inline-images/dhkitten.jpg",
+		URL:        "https://i.pinimg.com/originals/f0/bf/92/f0bf92400fdfb762aa109e1dfcfb4a9a.png",
 		UploadTime: time.Now().Add(10 * time.Minute),
 	}
 
