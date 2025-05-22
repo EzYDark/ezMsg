@@ -35,6 +35,13 @@ func InitDB() *DB {
 		Friends:           []*User{&ezy_user},
 	}
 
+	file1 := File{
+		ID:         1,
+		Sender:     &kheper_user,
+		URL:        "https://www.orchardroadanimalhospital.com/sites/default/files/inline-images/dhkitten.jpg",
+		UploadTime: time.Now().Add(10 * time.Minute),
+	}
+
 	chat := Chat{
 		ID:      778784,
 		Members: []*User{&ezy_user, &kheper_user},
@@ -106,6 +113,7 @@ func InitDB() *DB {
 				ID:        10,
 				Sender:    &kheper_user,
 				Message:   "I'm coding!",
+				Files:     []*File{&file1},
 				Timestamp: time.Now().Add(time.Minute * 1),
 				Status:    Received,
 			},

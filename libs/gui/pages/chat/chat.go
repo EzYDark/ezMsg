@@ -79,24 +79,26 @@ func Chat(gtx layout.Context) {
 				),
 				// Footer (Input box)
 				FlexChild(&FlexChildOpts{H: 70},
-					BackgroundBox(
-						Rect(RectOpts{Color: color.NRGBA{R: uint8(193), G: uint8(193), B: uint8(193), A: uint8(5)}}),
-						FlexBox(&FlexBoxOpts{Axis: Horizontal, Spacing: SpaceBetween},
-							// Message input box
-							FlexChild(&FlexChildOpts{Weight: 1},
-								Margin(&MarginOpts{All: 6},
-									Input(InputOpts{
-										EditorPtr: &inputBoxState,
-										ThemePtr:  gui.MyTheme,
-										Hint:      "Enter your message here...",
-									}),
+					Margin(&MarginOpts{Top: 6},
+						BackgroundBox(
+							Rect(RectOpts{Color: color.NRGBA{R: uint8(193), G: uint8(193), B: uint8(193), A: uint8(5)}}),
+							FlexBox(&FlexBoxOpts{Axis: Horizontal, Spacing: SpaceBetween},
+								// Message input box
+								FlexChild(&FlexChildOpts{Weight: 1},
+									Margin(&MarginOpts{All: 6},
+										Input(InputOpts{
+											EditorPtr: &inputBoxState,
+											ThemePtr:  gui.MyTheme,
+											Hint:      "Enter your message here...",
+										}),
+									),
 								),
-							),
-							// Add button for attachments
-							FlexChild(nil,
-								// TODO: Add hover effect on the Add button
-								Margin(&MarginOpts{Top: 1, Right: 8},
-									widgets.AddButton(&backButtonState),
+								// Add button for attachments
+								FlexChild(nil,
+									// TODO: Add hover effect on the Add button
+									Margin(&MarginOpts{Top: 1, Right: 8},
+										widgets.AddButton(&backButtonState),
+									),
 								),
 							),
 						),
