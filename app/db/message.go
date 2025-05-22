@@ -4,8 +4,9 @@ import "time"
 
 type Message struct {
 	ID        int
-	User      User
+	Sender    *User
 	Message   string
+	Files     []*File
 	Timestamp time.Time
 	Status    MsgStatus
 }

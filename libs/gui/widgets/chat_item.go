@@ -134,7 +134,7 @@ func chatItemContent(gtx layout.Context) layout.Widget {
 	)
 }
 
-func ListItemChat2(loggedUser db.User) layout.Widget {
+func ListItemChat2(loggedUser *db.User) layout.Widget {
 	return Margin(&MarginOpts{Left: 20, Right: 20},
 		FlexBox(&FlexBoxOpts{},
 			FlexChild(&FlexChildOpts{H: 70},

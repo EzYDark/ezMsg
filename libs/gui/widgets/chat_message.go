@@ -11,8 +11,8 @@ import (
 	"github.com/ezydark/ezMsg/libs/gui"
 )
 
-func ChatMsgBubble(message db.Message, index int) layout.Widget {
-	isLoggedUser := message.User.Username == gui.AppState.LoggedUser.Username
+func ChatMsgBubble(message *db.Message, index int) layout.Widget {
+	isLoggedUser := message.Sender.Username == gui.AppState.LoggedUser.Username
 
 	var messageTextState richtext.InteractiveText
 	var senderTextStae richtext.InteractiveText
@@ -45,7 +45,7 @@ func ChatMsgBubble(message db.Message, index int) layout.Widget {
 								Align(&AlignOpts{Alignment: msgDirection},
 									Text(TextOpts{ThemePtr: gui.MyTheme, TextState: &senderTextStae},
 										TextSpan(SpanStyle{
-											Content: message.User.Username,
+											Content: message.Sender.Username,
 											Font:    gui.Fonts[1].Font,
 											Size:    unit.Sp(14),
 											Color:   LightGray.NRGBA(),

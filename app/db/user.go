@@ -4,6 +4,6 @@ type User struct {
 	ID                int
 	Username          string
 	ProfilePictureURL string
-	Friends           []User
-	Chats             []Chat
+	Friends           []*User
+	Chats             []*Chat
 }

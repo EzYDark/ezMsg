@@ -11,7 +11,7 @@ import (
 
 type ezAppState struct {
 	CurrentPage pages.Page
-	LoggedUser  db.User
+	LoggedUser  *db.User
 }
 
 var DBPtr = db.InitDB()
@@ -19,7 +19,7 @@ var DBPtr = db.InitDB()
 // Default state on app startup
 var AppState = &ezAppState{
 	CurrentPage: pages.ChatPage,
-	LoggedUser:  DBPtr.RegisteredUsers[0], // TODO: Change dynamically
+	LoggedUser:  &DBPtr.RegisteredUsers[0], // TODO: Change dynamically
 }
 
 var Fonts []text.FontFace
