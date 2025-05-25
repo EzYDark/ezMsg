@@ -18,19 +18,23 @@ import (
 	"github.com/cloudflare/circl/kem/kyber/kyber768"
 	"github.com/ezydark/zero_knowledge_com/app"
 	"github.com/quic-go/quic-go"
-	"github.com/rs/zerolog/log"
 	"golang.org/x/crypto/hkdf"
+
+	"github.com/rs/zerolog/log"
 )
 
-// --- Core Cryptographic Structures and Functions (unchanged) ---
+// --- 1. Core Cryptographic Structures and Functions ---
+// (This section remains unchanged)
 type PrivateKeypair struct {
 	Classical   *ecdh.PrivateKey
 	PostQuantum kem.PrivateKey
 }
+
 type PublicKeypair struct {
 	Classical   *ecdh.PublicKey
 	PostQuantum kem.PublicKey
 }
+
 type AppMessage struct {
 	Nonce uint64
 	Data  []byte
@@ -51,6 +55,7 @@ func generateHybridKeyPair() (*PrivateKeypair, *PublicKeypair, error) {
 	pubKeys := &PublicKeypair{Classical: classicalPublic, PostQuantum: pqPublic}
 	return privKeys, pubKeys, nil
 }
+
 func deriveFinalKey(classicalSecret, postQuantumSecret []byte) ([]byte, error) {
 	combinedSecret := append(classicalSecret, postQuantumSecret...)
 	hash := sha256.New
@@ -61,6 +66,7 @@ func deriveFinalKey(classicalSecret, postQuantumSecret []byte) ([]byte, error) {
 	}
 	return key, nil
 }
+
 func encrypt(key []byte, msg AppMessage) ([]byte, error) {
 	plaintext, err := json.Marshal(msg)
 	if err != nil {
@@ -80,6 +86,7 @@ func encrypt(key []byte, msg AppMessage) ([]byte, error) {
 	}
 	return gcm.Seal(nonce, nonce, plaintext, nil), nil
 }
+
 func decrypt(key, ciphertext []byte) (*AppMessage, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
@@ -104,24 +111,27 @@ func decrypt(key, ciphertext []byte) (*AppMessage, error) {
 	return &msg, nil
 }
 
+// WHY: Encapsulate the client logic to be called multiple times.
+// It takes the shared key and configs as arguments to reuse them.
 func runClientLogic(sharedKey []byte, tlsConf *tls.Config, quicConf *quic.Config) {
 	conn, err := quic.DialAddr(context.Background(), "localhost:4242", tlsConf, quicConf)
 	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to connect to server")
+		log.Fatal().Msgf("Failed to connect to server: %v", err)
 	}
 	defer conn.CloseWithError(0, "connection closed normally")
 
+	// WHY: We can check the connection state to see if the session was resumed.
 	state := conn.ConnectionState().TLS
-	log.Info().Bool("resumed", state.DidResume).Msg("🚀 Alice has connected to the server")
+	log.Info().Msgf("🚀 Alice has connected to the server. Session Resumed: %t", state.DidResume)
 
 	stream, err := conn.OpenStreamSync(context.Background())
 	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to open stream")
+		log.Fatal().Msgf("Failed to open stream: %v", err)
 	}
 
 	var nonceBytes [8]byte
 	if _, err := rand.Read(nonceBytes[:]); err != nil {
-		log.Fatal().Err(err).Msg("Failed to generate nonce")
+		log.Fatal().Msgf("Failed to generate nonce: %v", err)
 	}
 	sentNonce := binary.BigEndian.Uint64(nonceBytes[:])
 
@@ -129,51 +139,50 @@ func runClientLogic(sharedKey []byte, tlsConf *tls.Config, quicConf *quic.Config
 		Nonce: sentNonce,
 		Data:  []byte("This is a secret message!"),
 	}
-	log.Info().Uint64("nonce", appMsg.Nonce).Msg("✉️ Alice is sending a secret message")
+	log.Info().Msgf("✉️ Alice is sending a secret message with nonce %d", appMsg.Nonce)
 
 	encryptedMessage, err := encrypt(sharedKey, appMsg)
 	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to encrypt message")
+		log.Fatal().Msgf("Failed to encrypt message: %v", err)
 	}
 
 	_, err = stream.Write(encryptedMessage)
 	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to send message")
+		log.Fatal().Msgf("Failed to send message: %v", err)
 	}
+	// Close the stream for writing
 	stream.Close()
 
 	response, err := io.ReadAll(stream)
 	if err != nil {
-		log.Error().Err(err).Msg("Could not read response")
+		// This can error if the server closes the stream first, which is fine
+		log.Info().Msgf("Could not read response: %v", err)
 	} else {
-		log.Info().Int("bytes", len(response)).Msg("📬 Alice received data back")
+		log.Info().Msgf("📬 Alice received %d bytes back.", len(response))
 		decryptedMsg, err := decrypt(sharedKey, response)
 		if err != nil {
-			log.Fatal().Err(err).Msg("Failed to decrypt message")
+			log.Fatal().Msgf("Failed to decrypt message: %v", err)
 		}
 		if decryptedMsg.Nonce != sentNonce {
-			log.Fatal().Uint64("sent_nonce", sentNonce).Uint64("received_nonce", decryptedMsg.Nonce).Msg("Replay attack! Nonce mismatch")
+			log.Fatal().Msgf("FATAL: Replay attack! Nonce mismatch. Sent %d, got %d", sentNonce, decryptedMsg.Nonce)
 		}
-		log.Info().Str("message", string(decryptedMsg.Data)).Msg("✅ Nonce verified. Decrypted message successfully")
+		log.Info().Msgf("✅ Nonce verified. Decrypted message: '%s'", string(decryptedMsg.Data))
 	}
 }
 
 func main() {
 	app.InitLogger()
-
-	// Key Exchange
+	// --- Key Exchange (Done once at the start) ---
 	alicePrivate, _, _ := generateHybridKeyPair()
 	_, bobPublic, _ := generateHybridKeyPair()
 	classicalSecretAlice, _ := alicePrivate.Classical.ECDH(bobPublic.Classical)
 	pqScheme := kyber768.Scheme()
 	_, postQuantumSecretAlice, _ := pqScheme.Encapsulate(bobPublic.PostQuantum)
-	sharedKeyAlice, err := deriveFinalKey(classicalSecretAlice, postQuantumSecretAlice)
-	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to derive shared key")
-	}
+	sharedKeyAlice, _ := deriveFinalKey(classicalSecretAlice, postQuantumSecretAlice)
 	log.Info().Msg("✅ Key exchange complete. Alice has her shared key.")
 
-	// Configs
+	// WHY: Define TLS and QUIC configs once to be reused.
+	// The tls.Config holds the session cache, which is critical for resumption.
 	tlsConf := &tls.Config{
 		InsecureSkipVerify: true,
 		NextProtos:         []string{"pq-chat-example"},
@@ -183,14 +192,21 @@ func main() {
 		Allow0RTT: true,
 	}
 
-	// First Connection
-	log.Info().Msg("\n======================================\n      Attempting First Connection     \n======================================")
+	// --- First Connection ---
+	log.Info().Msg("\n======================================")
+	log.Info().Msg("      Attempting First Connection     ")
+	log.Info().Msg("======================================")
 	runClientLogic(sharedKeyAlice, tlsConf, quicConf)
 	log.Info().Msg("✅ First connection finished.")
 
-	// Second Connection
-	log.Info().Msg("\n======================================\n  Attempting Second Connection (Resumed) \n======================================")
+	// --- Second Connection ---
+	log.Info().Msg("\n======================================")
+	log.Info().Msg("  Attempting Second Connection (Resumed) ")
+	log.Info().Msg("======================================")
+	// WHY: Wait a moment to simulate a real disconnect.
 	time.Sleep(1 * time.Second)
+	// WHY: Call the logic again with the *same* configs. The session ticket from the
+	// first connection is still in tlsConf.ClientSessionCache and will be used.
 	runClientLogic(sharedKeyAlice, tlsConf, quicConf)
 	log.Info().Msg("✅ Second connection finished.")
 }

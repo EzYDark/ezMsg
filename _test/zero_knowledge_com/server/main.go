@@ -9,16 +9,37 @@ import (
 	"encoding/pem"
 	"io"
 	"math/big"
+	"sync"
 	"time"
 
 	"github.com/ezydark/zero_knowledge_com/app"
 	"github.com/quic-go/quic-go"
+
 	"github.com/rs/zerolog/log"
 )
 
 const serverAddr = "localhost:4242"
 
-// generateTLSConfig remains the same
+var nonceStore = struct {
+	sync.RWMutex
+	m map[uint64]bool
+}{m: make(map[uint64]bool)}
+
+type AppMessage struct {
+	Nonce uint64
+	Data  []byte
+}
+
+func isNonceSeen(nonce uint64) bool {
+	nonceStore.Lock()
+	defer nonceStore.Unlock()
+	if _, ok := nonceStore.m[nonce]; ok {
+		return true
+	}
+	nonceStore.m[nonce] = true
+	return false
+}
+
 func generateTLSConfig() *tls.Config {
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
@@ -70,28 +91,30 @@ func runServer() error {
 }
 
 func handleConnection(conn quic.Connection) {
-	log.Info().Str("remote_addr", conn.RemoteAddr().String()).Msg("Accepted connection")
+	log.Info().Msgf("Accepted connection from %s", conn.RemoteAddr())
 	for {
 		stream, err := conn.AcceptStream(context.Background())
 		if err != nil {
+			// WHY: Check if this is the "normal closure" error from the client.
 			if appErr, ok := err.(*quic.ApplicationError); ok && appErr.ErrorCode == 0 {
-				log.Info().Str("remote_addr", conn.RemoteAddr().String()).Msg("Client closed connection gracefully")
+				log.Info().Msgf("Client %s closed the connection gracefully.", conn.RemoteAddr())
 			} else {
-				log.Error().Err(err).Msg("Error accepting stream")
+				// It's a different, unexpected error.
+				log.Info().Msgf("Error accepting stream: %v", err)
 			}
-			return
+			return // Exit the loop and end the handler for this connection.
 		}
 		go func(str quic.Stream) {
 			defer str.Close()
 			buf, err := io.ReadAll(str)
 			if err != nil {
-				log.Error().Err(err).Msg("Error reading from stream")
+				log.Info().Msgf("Error reading from stream: %v", err)
 				return
 			}
-			log.Debug().Int("bytes", len(buf)).Msg("Server received data, echoing back")
+			log.Info().Msgf("Server received %d bytes of encrypted data, echoing back.", len(buf))
 			_, err = str.Write(buf)
 			if err != nil {
-				log.Error().Err(err).Msg("Error writing to stream")
+				log.Info().Msgf("Error writing to stream: %v", err)
 			}
 		}(stream)
 	}
@@ -100,6 +123,6 @@ func handleConnection(conn quic.Connection) {
 func main() {
 	app.InitLogger()
 	if err := runServer(); err != nil {
-		log.Fatal().Err(err).Msg("Server error")
+		log.Fatal().Msgf("Server error: %v", err)
 	}
 }
