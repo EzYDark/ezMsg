@@ -18,12 +18,24 @@ import (
 	"github.com/cloudflare/circl/kem/kyber/kyber768"
 	"github.com/ezydark/zero_knowledge_com/app"
 	"github.com/quic-go/quic-go"
-	"golang.org/x/crypto/hkdf"
-
 	"github.com/rs/zerolog/log"
+	"golang.org/x/crypto/hkdf"
 )
 
-// --- 1. Core Cryptographic Structures and Functions ---
+// --- Corrected Message Structures ---
+
+// OuterFrame is the message structure visible to the server.
+type OuterFrame struct {
+	Nonce            uint64
+	EncryptedPayload []byte
+}
+
+// InnerMessage is the actual message content, which is always encrypted.
+type InnerMessage struct {
+	Data []byte
+}
+
+// --- Core Cryptographic Structures and Functions ---
 // (This section remains unchanged)
 type PrivateKeypair struct {
 	Classical   *ecdh.PrivateKey
@@ -33,11 +45,6 @@ type PrivateKeypair struct {
 type PublicKeypair struct {
 	Classical   *ecdh.PublicKey
 	PostQuantum kem.PublicKey
-}
-
-type AppMessage struct {
-	Nonce uint64
-	Data  []byte
 }
 
 func generateHybridKeyPair() (*PrivateKeypair, *PublicKeypair, error) {
@@ -67,10 +74,11 @@ func deriveFinalKey(classicalSecret, postQuantumSecret []byte) ([]byte, error) {
 	return key, nil
 }
 
-func encrypt(key []byte, msg AppMessage) ([]byte, error) {
+// encrypt now takes the InnerMessage and returns the encrypted payload
+func encrypt(key []byte, msg InnerMessage) ([]byte, error) {
 	plaintext, err := json.Marshal(msg)
 	if err != nil {
-		return nil, fmt.Errorf("failed to marshal message: %w", err)
+		return nil, fmt.Errorf("failed to marshal inner message: %w", err)
 	}
 	block, err := aes.NewCipher(key)
 	if err != nil {
@@ -87,7 +95,8 @@ func encrypt(key []byte, msg AppMessage) ([]byte, error) {
 	return gcm.Seal(nonce, nonce, plaintext, nil), nil
 }
 
-func decrypt(key, ciphertext []byte) (*AppMessage, error) {
+// decrypt now takes the payload and returns the InnerMessage
+func decrypt(key, encryptedPayload []byte) (*InnerMessage, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
@@ -96,83 +105,94 @@ func decrypt(key, ciphertext []byte) (*AppMessage, error) {
 	if err != nil {
 		return nil, err
 	}
-	if len(ciphertext) < gcm.NonceSize() {
+	if len(encryptedPayload) < gcm.NonceSize() {
 		return nil, fmt.Errorf("ciphertext too short")
 	}
-	nonce, actualCiphertext := ciphertext[:gcm.NonceSize()], ciphertext[gcm.NonceSize():]
+	nonce, actualCiphertext := encryptedPayload[:gcm.NonceSize()], encryptedPayload[gcm.NonceSize():]
 	plaintext, err := gcm.Open(nil, nonce, actualCiphertext, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decrypt: %w", err)
 	}
-	var msg AppMessage
+	var msg InnerMessage
 	if err := json.Unmarshal(plaintext, &msg); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal message: %w", err)
+		return nil, fmt.Errorf("failed to unmarshal inner message: %w", err)
 	}
 	return &msg, nil
 }
 
-// WHY: Encapsulate the client logic to be called multiple times.
-// It takes the shared key and configs as arguments to reuse them.
-func runClientLogic(sharedKey []byte, tlsConf *tls.Config, quicConf *quic.Config) {
+func runFullHandshakeConnection(sharedKey []byte, tlsConf *tls.Config, quicConf *quic.Config) {
 	conn, err := quic.DialAddr(context.Background(), "localhost:4242", tlsConf, quicConf)
 	if err != nil {
 		log.Fatal().Msgf("Failed to connect to server: %v", err)
 	}
 	defer conn.CloseWithError(0, "connection closed normally")
+	log.Info().Msg("🚀 Alice has connected to the server for the first time (1-RTT).")
+	log.Info().Msg("✅ First connection finished, session ticket should now be cached.")
+}
 
-	// WHY: We can check the connection state to see if the session was resumed.
-	state := conn.ConnectionState().TLS
-	log.Info().Msgf("🚀 Alice has connected to the server. Session Resumed: %t", state.DidResume)
+func run0RTTLogic(sharedKey []byte, frameToSend OuterFrame, tlsConf *tls.Config, quicConf *quic.Config) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-	stream, err := conn.OpenStreamSync(context.Background())
+	payload, err := json.Marshal(frameToSend)
 	if err != nil {
-		log.Fatal().Msgf("Failed to open stream: %v", err)
+		log.Error().Err(err).Msg("Failed to marshal outer frame for sending")
+		return
 	}
 
-	var nonceBytes [8]byte
-	if _, err := rand.Read(nonceBytes[:]); err != nil {
-		log.Fatal().Msgf("Failed to generate nonce: %v", err)
-	}
-	sentNonce := binary.BigEndian.Uint64(nonceBytes[:])
-
-	appMsg := AppMessage{
-		Nonce: sentNonce,
-		Data:  []byte("This is a secret message!"),
-	}
-	log.Info().Msgf("✉️ Alice is sending a secret message with nonce %d", appMsg.Nonce)
-
-	encryptedMessage, err := encrypt(sharedKey, appMsg)
+	conn, err := quic.DialAddrEarly(ctx, "localhost:4242", tlsConf, quicConf)
 	if err != nil {
-		log.Fatal().Msgf("Failed to encrypt message: %v", err)
+		log.Error().Err(err).Msg("Failed to dial early")
+		return
+	}
+	defer conn.CloseWithError(0, "connection closed by client")
+
+	<-conn.HandshakeComplete()
+	if !conn.ConnectionState().Used0RTT {
+		log.Warn().Msg("⚠️ Server did not accept 0-RTT. Aborting test logic for this run.")
+		return
+	}
+	log.Info().Msg("🤝 Handshake complete and 0-RTT was accepted by the server.")
+
+	stream, err := conn.OpenStream()
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to open 0-RTT stream")
+		return
 	}
 
-	_, err = stream.Write(encryptedMessage)
+	_, err = stream.Write(payload)
 	if err != nil {
-		log.Fatal().Msgf("Failed to send message: %v", err)
+		log.Error().Err(err).Msg("Failed to write to 0-RTT stream")
+		stream.CancelWrite(0)
+		return
 	}
-	// Close the stream for writing
+	log.Info().Msgf("✉️  Alice sent frame with nonce %d", frameToSend.Nonce)
 	stream.Close()
 
 	response, err := io.ReadAll(stream)
 	if err != nil {
-		// This can error if the server closes the stream first, which is fine
-		log.Info().Msgf("Could not read response: %v", err)
+		log.Warn().Err(err).Msg("Could not read response from stream")
+		log.Warn().Msg("⚠️  This is expected on the replay attempt if the server rejects the data and closes the connection.")
+		return
+	}
+
+	var receivedFrame OuterFrame
+	if err := json.Unmarshal(response, &receivedFrame); err != nil {
+		log.Error().Err(err).Msg("Failed to unmarshal received frame")
+		return
+	}
+
+	log.Info().Msgf("📬 Alice received frame back with nonce %d.", receivedFrame.Nonce)
+	decryptedMsg, err := decrypt(sharedKey, receivedFrame.EncryptedPayload)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to decrypt received payload")
 	} else {
-		log.Info().Msgf("📬 Alice received %d bytes back.", len(response))
-		decryptedMsg, err := decrypt(sharedKey, response)
-		if err != nil {
-			log.Fatal().Msgf("Failed to decrypt message: %v", err)
-		}
-		if decryptedMsg.Nonce != sentNonce {
-			log.Fatal().Msgf("FATAL: Replay attack! Nonce mismatch. Sent %d, got %d", sentNonce, decryptedMsg.Nonce)
-		}
-		log.Info().Msgf("✅ Nonce verified. Decrypted message: '%s'", string(decryptedMsg.Data))
+		log.Info().Msgf("✅ E2EE Payload decrypted successfully: '%s'", string(decryptedMsg.Data))
 	}
 }
 
 func main() {
 	app.InitLogger()
-	// --- Key Exchange (Done once at the start) ---
 	alicePrivate, _, _ := generateHybridKeyPair()
 	_, bobPublic, _ := generateHybridKeyPair()
 	classicalSecretAlice, _ := alicePrivate.Classical.ECDH(bobPublic.Classical)
@@ -181,8 +201,6 @@ func main() {
 	sharedKeyAlice, _ := deriveFinalKey(classicalSecretAlice, postQuantumSecretAlice)
 	log.Info().Msg("✅ Key exchange complete. Alice has her shared key.")
 
-	// WHY: Define TLS and QUIC configs once to be reused.
-	// The tls.Config holds the session cache, which is critical for resumption.
 	tlsConf := &tls.Config{
 		InsecureSkipVerify: true,
 		NextProtos:         []string{"pq-chat-example"},
@@ -192,21 +210,40 @@ func main() {
 		Allow0RTT: true,
 	}
 
-	// --- First Connection ---
 	log.Info().Msg("\n======================================")
-	log.Info().Msg("      Attempting First Connection     ")
+	log.Info().Msg("   Step 1: Initial 1-RTT Connection   ")
 	log.Info().Msg("======================================")
-	runClientLogic(sharedKeyAlice, tlsConf, quicConf)
-	log.Info().Msg("✅ First connection finished.")
-
-	// --- Second Connection ---
-	log.Info().Msg("\n======================================")
-	log.Info().Msg("  Attempting Second Connection (Resumed) ")
-	log.Info().Msg("======================================")
-	// WHY: Wait a moment to simulate a real disconnect.
+	runFullHandshakeConnection(sharedKeyAlice, tlsConf, quicConf)
+	log.Info().Msg("Waiting a moment before starting 0-RTT attempts...")
 	time.Sleep(1 * time.Second)
-	// WHY: Call the logic again with the *same* configs. The session ticket from the
-	// first connection is still in tlsConf.ClientSessionCache and will be used.
-	runClientLogic(sharedKeyAlice, tlsConf, quicConf)
-	log.Info().Msg("✅ Second connection finished.")
+
+	log.Info().Msg("\n======================================")
+	log.Info().Msg("     Step 2: 0-RTT Replay Attack      ")
+	log.Info().Msg("======================================")
+
+	innerMsg := InnerMessage{Data: []byte("This is a secret 0-RTT message!")}
+	encryptedPayload, err := encrypt(sharedKeyAlice, innerMsg)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to encrypt inner message")
+	}
+
+	var nonceBytes [8]byte
+	rand.Read(nonceBytes[:])
+	replayNonce := binary.BigEndian.Uint64(nonceBytes[:])
+
+	frameToSend := OuterFrame{
+		Nonce:            replayNonce,
+		EncryptedPayload: encryptedPayload,
+	}
+	log.Info().Msgf("Crafted a single malicious frame with nonce %d to be replayed.", replayNonce)
+
+	log.Info().Msg("\n--- Attempting LEGITIMATE 0-RTT connection... ---")
+	run0RTTLogic(sharedKeyAlice, frameToSend, tlsConf, quicConf)
+	log.Info().Msg("✅ Finished legitimate 0-RTT attempt.")
+
+	time.Sleep(1 * time.Second)
+
+	log.Info().Msg("\n--- Attempting REPLAY of the same 0-RTT data... ---")
+	run0RTTLogic(sharedKeyAlice, frameToSend, tlsConf, quicConf)
+	log.Info().Msg("✅ Finished replay attack attempt.")
 }
