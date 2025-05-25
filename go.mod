@@ -7,7 +7,7 @@ require (
 	gioui.org/x v0.8.1
 	github.com/ezydark/ezforce v0.0.0-20250408141058-acc292ba426b
 	github.com/fatih/color v1.18.0
-	github.com/rs/zerolog v1.33.0
+	github.com/rs/zerolog v1.34.0
 )
 
 require (
