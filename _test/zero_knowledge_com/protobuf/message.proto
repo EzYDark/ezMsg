@@ -1,0 +1,17 @@
+edition = "2023";
+
+package protobuf;
+
+import "google/protobuf/go_features.proto";
+option features.(pb.go).api_level = API_OPAQUE;
+
+option go_package = "./;protobuf";
+
+message OuterFrame {
+  uint64 nonce = 1;
+  bytes encrypted_payload = 2;
+}
+
+message InnerMessage {
+  bytes data = 1;
+}

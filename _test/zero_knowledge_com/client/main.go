@@ -9,7 +9,6 @@ import (
 	"crypto/sha256"
 	"crypto/tls"
 	"encoding/binary"
-	"encoding/json"
 	"fmt"
 	"io"
 	"time"
@@ -17,23 +16,12 @@ import (
 	"github.com/cloudflare/circl/kem"
 	"github.com/cloudflare/circl/kem/kyber/kyber768"
 	"github.com/ezydark/zero_knowledge_com/app"
+	pb "github.com/ezydark/zero_knowledge_com/protobuf"
 	"github.com/quic-go/quic-go"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/crypto/hkdf"
+	"google.golang.org/protobuf/proto"
 )
-
-// --- Corrected Message Structures ---
-
-// OuterFrame is the message structure visible to the server.
-type OuterFrame struct {
-	Nonce            uint64
-	EncryptedPayload []byte
-}
-
-// InnerMessage is the actual message content, which is always encrypted.
-type InnerMessage struct {
-	Data []byte
-}
 
 // --- Core Cryptographic Structures and Functions ---
 // (This section remains unchanged)
@@ -75,8 +63,8 @@ func deriveFinalKey(classicalSecret, postQuantumSecret []byte) ([]byte, error) {
 }
 
 // encrypt now takes the InnerMessage and returns the encrypted payload
-func encrypt(key []byte, msg InnerMessage) ([]byte, error) {
-	plaintext, err := json.Marshal(msg)
+func encrypt(key []byte, msg *pb.InnerMessage) ([]byte, error) {
+	plaintext, err := proto.Marshal(msg)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal inner message: %w", err)
 	}
@@ -96,7 +84,7 @@ func encrypt(key []byte, msg InnerMessage) ([]byte, error) {
 }
 
 // decrypt now takes the payload and returns the InnerMessage
-func decrypt(key, encryptedPayload []byte) (*InnerMessage, error) {
+func decrypt(key, encryptedPayload []byte) (*pb.InnerMessage, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
@@ -113,8 +101,8 @@ func decrypt(key, encryptedPayload []byte) (*InnerMessage, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to decrypt: %w", err)
 	}
-	var msg InnerMessage
-	if err := json.Unmarshal(plaintext, &msg); err != nil {
+	var msg pb.InnerMessage
+	if err := proto.Unmarshal(plaintext, &msg); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal inner message: %w", err)
 	}
 	return &msg, nil
@@ -130,11 +118,11 @@ func runFullHandshakeConnection(sharedKey []byte, tlsConf *tls.Config, quicConf 
 	log.Info().Msg("✅ First connection finished, session ticket should now be cached.")
 }
 
-func run0RTTLogic(sharedKey []byte, frameToSend OuterFrame, tlsConf *tls.Config, quicConf *quic.Config) {
+func run0RTTLogic(sharedKey []byte, frameToSend *pb.OuterFrame, tlsConf *tls.Config, quicConf *quic.Config) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	payload, err := json.Marshal(frameToSend)
+	payload, err := proto.Marshal(frameToSend)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to marshal outer frame for sending")
 		return
@@ -166,7 +154,7 @@ func run0RTTLogic(sharedKey []byte, frameToSend OuterFrame, tlsConf *tls.Config,
 		stream.CancelWrite(0)
 		return
 	}
-	log.Info().Msgf("✉️  Alice sent frame with nonce %d", frameToSend.Nonce)
+	log.Info().Msgf("✉️  Alice sent frame with nonce %d", frameToSend.GetNonce())
 	stream.Close()
 
 	response, err := io.ReadAll(stream)
@@ -176,18 +164,18 @@ func run0RTTLogic(sharedKey []byte, frameToSend OuterFrame, tlsConf *tls.Config,
 		return
 	}
 
-	var receivedFrame OuterFrame
-	if err := json.Unmarshal(response, &receivedFrame); err != nil {
+	var receivedFrame pb.OuterFrame
+	if err := proto.Unmarshal(response, &receivedFrame); err != nil {
 		log.Error().Err(err).Msg("Failed to unmarshal received frame")
 		return
 	}
 
-	log.Info().Msgf("📬 Alice received frame back with nonce %d.", receivedFrame.Nonce)
-	decryptedMsg, err := decrypt(sharedKey, receivedFrame.EncryptedPayload)
+	log.Info().Msgf("📬 Alice received frame back with nonce %d.", receivedFrame.GetNonce())
+	decryptedMsg, err := decrypt(sharedKey, receivedFrame.GetEncryptedPayload())
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to decrypt received payload")
 	} else {
-		log.Info().Msgf("✅ E2EE Payload decrypted successfully: '%s'", string(decryptedMsg.Data))
+		log.Info().Msgf("✅ E2EE Payload decrypted successfully: '%s'", string(decryptedMsg.GetData()))
 	}
 }
 
@@ -221,7 +209,8 @@ func main() {
 	log.Info().Msg("     Step 2: 0-RTT Replay Attack      ")
 	log.Info().Msg("======================================")
 
-	innerMsg := InnerMessage{Data: []byte("This is a secret 0-RTT message!")}
+	innerMsg := &pb.InnerMessage{}
+	innerMsg.SetData([]byte("This is a secret 0-RTT message!"))
 	encryptedPayload, err := encrypt(sharedKeyAlice, innerMsg)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to encrypt inner message")
@@ -231,10 +220,9 @@ func main() {
 	rand.Read(nonceBytes[:])
 	replayNonce := binary.BigEndian.Uint64(nonceBytes[:])
 
-	frameToSend := OuterFrame{
-		Nonce:            replayNonce,
-		EncryptedPayload: encryptedPayload,
-	}
+	frameToSend := &pb.OuterFrame{}
+	frameToSend.SetNonce(replayNonce)
+	frameToSend.SetEncryptedPayload(encryptedPayload)
 	log.Info().Msgf("Crafted a single malicious frame with nonce %d to be replayed.", replayNonce)
 
 	log.Info().Msg("\n--- Attempting LEGITIMATE 0-RTT connection... ---")

@@ -6,7 +6,6 @@ import (
 	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/json"
 	"encoding/pem"
 	"io"
 	"math/big"
@@ -14,19 +13,14 @@ import (
 	"time"
 
 	"github.com/ezydark/zero_knowledge_com/app"
+	pb "github.com/ezydark/zero_knowledge_com/protobuf"
 	"github.com/quic-go/quic-go"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/rs/zerolog/log"
 )
 
 const serverAddr = "localhost:4242"
-
-// OuterFrame is the message structure visible to the server.
-// It contains the nonce for replay protection and the opaque E2EE payload.
-type OuterFrame struct {
-	Nonce            uint64
-	EncryptedPayload []byte
-}
 
 var nonceStore = struct {
 	sync.RWMutex
@@ -114,8 +108,8 @@ func handleConnection(conn quic.Connection) {
 
 			// WHY: The server unmarshals the outer frame, but has NO KNOWLEDGE
 			// of the key needed to decrypt the EncryptedPayload.
-			var frame OuterFrame
-			if err := json.Unmarshal(buf, &frame); err != nil {
+			var frame pb.OuterFrame
+			if err := proto.Unmarshal(buf, &frame); err != nil {
 				log.Error().Err(err).Msg("Failed to unmarshal outer frame from client")
 				conn.CloseWithError(1, "unmarshal failed")
 				return
@@ -123,13 +117,13 @@ func handleConnection(conn quic.Connection) {
 
 			// WHY: This is the core of replay attack prevention, now done without
 			// compromising E2EE.
-			if isNonceSeen(frame.Nonce) {
-				log.Warn().Uint64("nonce", frame.Nonce).Msg("🚨 REPLAY ATTACK DETECTED! Rejecting frame.")
+			if isNonceSeen(frame.GetNonce()) {
+				log.Warn().Uint64("nonce", frame.GetNonce()).Msg("🚨 REPLAY ATTACK DETECTED! Rejecting frame.")
 				conn.CloseWithError(2, "replay detected")
 				return
 			}
 
-			log.Info().Uint64("nonce", frame.Nonce).Int("payload_size", len(frame.EncryptedPayload)).Msg("✅ Received valid frame, echoing back.")
+			log.Info().Uint64("nonce", frame.GetNonce()).Int("payload_size", len(frame.GetEncryptedPayload())).Msg("✅ Received valid frame, echoing back.")
 
 			// WHY: The server echoes the exact same buffer back. It cannot construct
 			// a new one because it cannot read or re-encrypt the payload.
