@@ -1,10 +1,10 @@
-namespace ezMsg.Database.File;
+namespace ezMsg.Database.Attachment;
 
 table Attachment {
     UID:ulong;
     SenderUID:ulong;
-    URL:string;
+    ContentURL:string;
     UploadedAt:ulong;
-    Size:uint;
+    Size:ulong;
     Hash:string;
 }

@@ -3,6 +3,8 @@ namespace ezMsg.Database.User;
 table User {
     UID:ulong;
     Username:string;
+    Email:string;
+    Password:string;
     ProfilePictureURL:string;
     FriendsUIDs:[ulong]; // List of User IDs who are friends with the user
 }

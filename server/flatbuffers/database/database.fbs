@@ -1,5 +1,10 @@
 namespace ezMsg.Database;
 
+include "inner/attachment.fbs";
+include "inner/message.fbs";
+include "inner/user.fbs";
+include "inner/chat.fbs";
+
 table Database {
     UID:ulong;
     RegisteredUsersUIDs:[ulong]; // List of User IDs who are registered

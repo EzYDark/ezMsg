@@ -4,5 +4,5 @@ table Chat {
     UID:ulong;
     MembersUIDs:[ulong]; // List of User IDs who are members of the chat
     MessagesUIDs:[ulong]; // List of Message IDs in the chat
-    FilesUIDs:[ulong]; // List of File IDs attached to the chat
+    AttachmentsUIDs:[ulong]; // List of File IDs attached to the chat
 }
