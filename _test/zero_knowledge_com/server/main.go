@@ -13,9 +13,8 @@ import (
 	"time"
 
 	"github.com/ezydark/zero_knowledge_com/app"
-	pb "github.com/ezydark/zero_knowledge_com/protobuf"
+	fb "github.com/ezydark/zero_knowledge_com/schema/ezMsgSchema/Payload"
 	"github.com/quic-go/quic-go"
-	"google.golang.org/protobuf/proto"
 
 	"github.com/rs/zerolog/log"
 )
@@ -92,44 +91,38 @@ func runServer() error {
 func handleConnection(conn quic.Connection) {
 	log.Info().Msgf("Accepted connection from %s. 0-RTT: %t", conn.RemoteAddr(), conn.ConnectionState().Used0RTT)
 	for {
-		stream, err := conn.AcceptStream(context.Background())
-		if err != nil {
-			log.Info().Msgf("Client %s closed the connection: %v", conn.RemoteAddr(), err)
+		stream, errAccept := conn.AcceptStream(context.Background())
+		if errAccept != nil {
+			log.Info().Msgf("Client %s closed the connection: %v", conn.RemoteAddr(), errAccept)
 			return
 		}
 
 		go func(str quic.Stream) {
 			defer str.Close()
-			buf, err := io.ReadAll(str)
-			if err != nil {
-				log.Error().Err(err).Msg("Error reading from stream")
+			buf, errRead := io.ReadAll(str)
+			if errRead != nil {
+				log.Error().Err(errRead).Msg("Error reading from stream")
 				return
 			}
 
-			// WHY: The server unmarshals the outer frame, but has NO KNOWLEDGE
-			// of the key needed to decrypt the EncryptedPayload.
-			var frame pb.OuterFrame
-			if err := proto.Unmarshal(buf, &frame); err != nil {
-				log.Error().Err(err).Msg("Failed to unmarshal outer frame from client")
-				conn.CloseWithError(1, "unmarshal failed")
+			// Parse OuterFrame from received bytes
+			fbOuterFrame := fb.GetRootAsOuterFrame(buf, 0)
+			nonce := fbOuterFrame.Nonce()
+
+			// Core replay attack prevention
+			if isNonceSeen(nonce) {
+				log.Warn().Uint64("nonce", nonce).Msg("🚨 REPLAY ATTACK DETECTED! Rejecting frame.")
+				conn.CloseWithError(2, "replay detected") // QUIC error code for replay
 				return
 			}
 
-			// WHY: This is the core of replay attack prevention, now done without
-			// compromising E2EE.
-			if isNonceSeen(frame.GetNonce()) {
-				log.Warn().Uint64("nonce", frame.GetNonce()).Msg("🚨 REPLAY ATTACK DETECTED! Rejecting frame.")
-				conn.CloseWithError(2, "replay detected")
-				return
-			}
+			payloadSize := fbOuterFrame.EncryptedPayloadLength()
+			log.Info().Uint64("nonce", nonce).Int("payload_size", payloadSize).Msg("✅ Received valid frame, echoing back.")
 
-			log.Info().Uint64("nonce", frame.GetNonce()).Int("payload_size", len(frame.GetEncryptedPayload())).Msg("✅ Received valid frame, echoing back.")
-
-			// WHY: The server echoes the exact same buffer back. It cannot construct
-			// a new one because it cannot read or re-encrypt the payload.
-			_, err = str.Write(buf)
-			if err != nil {
-				log.Error().Err(err).Msg("Error writing response to stream")
+			// Server echoes the exact same buffer 'buf' back.
+			_, errWrite := str.Write(buf)
+			if errWrite != nil {
+				log.Error().Err(errWrite).Msg("Error writing response to stream")
 			}
 		}(stream)
 	}

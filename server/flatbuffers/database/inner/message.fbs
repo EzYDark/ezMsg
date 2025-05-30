@@ -1,0 +1,10 @@
+namespace ezMsg.Database.Message;
+
+table Message {
+    UID:ulong;
+    SenderUID:ulong;
+    Content:string;
+    AttachmentsUIDs:[ulong];
+    SentAt:ulong;
+    Status:int;
+}

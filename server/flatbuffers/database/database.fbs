@@ -1,0 +1,9 @@
+namespace ezMsg.Database;
+
+table Database {
+    UID:ulong;
+    RegisteredUsersUIDs:[ulong]; // List of User IDs who are registered
+    ChatsUIDs:[ulong]; // List of Chat IDs in the database
+}
+
+root_type Database;
