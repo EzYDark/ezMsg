@@ -1,0 +1,15 @@
+namespace ezMsg.Database.Message;
+
+enum MsgStatus : ubyte {
+    Sent = 0,
+    Received = 1
+}
+
+table Message {
+    UID:ulong; // Unique identifier for the message.
+    SenderUID:ulong; // UID of the user who sent the message.
+    Content:string; // Text content of the message.
+    AttachmentsUIDs:[ulong]; // List of UIDs for any attachments included with the message.
+    SentAt:ulong; // Timestamp of when the message was sent (e.g., Unix epoch in seconds/ms).
+    Status:MsgStatus; // Current delivery or read status of the message.
+}

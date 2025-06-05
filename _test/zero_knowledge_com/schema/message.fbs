@@ -1,0 +1,13 @@
+namespace ezMsgSchema.Payload;
+
+table InnerMessage {
+  data:[ubyte] (required); // The actual secret message content
+}
+
+table OuterFrame {
+  nonce:ulong;                    // Nonce for replay attack prevention
+  encrypted_payload:[ubyte] (required); // AES-GCM encrypted InnerMessage
+}
+
+// OuterFrame is typically the root message sent over the wire
+root_type OuterFrame;
