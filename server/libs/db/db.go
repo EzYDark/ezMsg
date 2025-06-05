@@ -9,7 +9,9 @@ import (
 
 var db *surrealdb.DB
 
-var dbConfig = struct {
+type mainDB struct {
+	DbPtr *surrealdb.DB
+
 	Host string
 	Port int
 
@@ -18,7 +20,9 @@ var dbConfig = struct {
 
 	NS       string
 	Database string
-}{
+}
+
+var dbConfig = &mainDB{
 	Host: "localhost",
 	Port: 8000,
 
@@ -30,19 +34,19 @@ var dbConfig = struct {
 	Database: "ezMsg",
 }
 
-func Init() *surrealdb.DB {
-	if db != nil {
+func InitDB() (*mainDB, string) {
+	if dbConfig.DbPtr != nil {
 		log.Fatal().Msg("DB already initialized")
 	}
 
 	var err error
-	db, err = surrealdb.New("wss://" + dbConfig.Host + ":" + strconv.Itoa(dbConfig.Port))
+	dbConfig.DbPtr, err = surrealdb.New("wss://" + dbConfig.Host + ":" + strconv.Itoa(dbConfig.Port))
 	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to connect to DB")
+		log.Fatal().Msgf("Failed to connect to DB:\n%v", err)
 	}
 	log.Debug().Msg("Connected to DB successfully")
 
-	_, err = db.SignIn(&surrealdb.Auth{
+	token, err := dbConfig.DbPtr.SignIn(&surrealdb.Auth{
 		Username: dbConfig.User,
 		Password: dbConfig.Pass,
 
@@ -50,17 +54,17 @@ func Init() *surrealdb.DB {
 		Database:  dbConfig.Database,
 	})
 	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to sign in to DB")
+		log.Fatal().Msgf("Failed to sign in to DB:\n%v", err)
 	}
 	log.Debug().Msg("Signed in to DB successfully")
 
-	return db
+	return dbConfig, token
 }
 
-func GetDB() *surrealdb.DB {
-	if db == nil {
+func GetDB() *mainDB {
+	if dbConfig.DbPtr == nil {
 		log.Fatal().Msg("DB not initialized")
 	}
 
-	return db
+	return dbConfig
 }
