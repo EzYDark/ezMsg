@@ -7,13 +7,12 @@ import (
 	"github.com/surrealdb/surrealdb.go"
 )
 
-var db *surrealdb.DB
-
 type mainDB struct {
 	DbPtr *surrealdb.DB
 
-	Host string
-	Port int
+	Host   string
+	Port   int
+	Prefix string
 
 	User string
 	Pass string
@@ -23,11 +22,14 @@ type mainDB struct {
 }
 
 var dbConfig = &mainDB{
-	Host: "localhost",
-	Port: 8000,
+	DbPtr: nil,
 
-	User: "root",
-	Pass: "root",
+	Host:   "localhost",
+	Port:   8000,
+	Prefix: "ws://", // TODO: Make secure WSS connection
+
+	User: "ezy",
+	Pass: "1234",
 
 	// NS:     "prod",
 	NS:       "dev",
@@ -40,7 +42,7 @@ func InitDB() (*mainDB, string) {
 	}
 
 	var err error
-	dbConfig.DbPtr, err = surrealdb.New("wss://" + dbConfig.Host + ":" + strconv.Itoa(dbConfig.Port))
+	dbConfig.DbPtr, err = surrealdb.New(dbConfig.Prefix + dbConfig.Host + ":" + strconv.Itoa(dbConfig.Port))
 	if err != nil {
 		log.Fatal().Msgf("Failed to connect to DB:\n%v", err)
 	}
