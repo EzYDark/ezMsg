@@ -1,0 +1,10 @@
+include "message.fbs";
+
+namespace ezMsg.Communication;
+
+table OuterShell {
+  message: ezMsg.Communication.Message;
+  nonce: ulong;
+}
+
+root_type OuterShell;
