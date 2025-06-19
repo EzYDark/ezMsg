@@ -1,4 +1,0 @@
-include "database/database.fbs";
-include "communication/message.fbs";
-
-root_type ezMsg.Communication.ClientFrame;

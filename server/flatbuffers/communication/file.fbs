@@ -1,0 +1,48 @@
+// Defines all structures related to file transfers.
+
+namespace ezMsg.Communication;
+
+// --- E2EE Content (This part is created and encrypted by the client) ---
+
+// Encrypted and placed in UploadFileRequest.encrypted_metadata.
+table FileMetadata {
+    filename:string (required);
+    mime_type:string;
+}
+
+// Encrypted and placed in UploadFileRequest.encrypted_data.
+table FileData {
+    bytes:[ubyte] (required);
+}
+
+
+// --- Client->Server Requests ---
+
+table UploadFileRequest {
+    encrypted_metadata:[ubyte] (required);
+    encrypted_data:[ubyte] (required);
+}
+
+table DownloadFileRequest {
+    file_uid:ulong;
+}
+
+
+// --- Server->Client Responses ---
+
+// Response to an UploadFileRequest.
+table UploadFileResponse {
+    request_nonce: ulong;
+    success:bool;
+    file_uid:ulong;
+    error_message:string;
+}
+
+// Response to a DownloadFileRequest.
+table DownloadFileResponse {
+    request_nonce: ulong;
+    success:bool;
+    file_uid:ulong;
+    encrypted_data:[ubyte];
+    error_message:string;
+}

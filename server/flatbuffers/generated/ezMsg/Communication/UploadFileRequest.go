@@ -6,27 +6,27 @@ import (
 	flatbuffers "github.com/google/flatbuffers/go"
 )
 
-type MessageContent struct {
+type UploadFileRequest struct {
 	_tab flatbuffers.Table
 }
 
-func GetRootAsMessageContent(buf []byte, offset flatbuffers.UOffsetT) *MessageContent {
+func GetRootAsUploadFileRequest(buf []byte, offset flatbuffers.UOffsetT) *UploadFileRequest {
 	n := flatbuffers.GetUOffsetT(buf[offset:])
-	x := &MessageContent{}
+	x := &UploadFileRequest{}
 	x.Init(buf, n+offset)
 	return x
 }
 
-func (rcv *MessageContent) Init(buf []byte, i flatbuffers.UOffsetT) {
+func (rcv *UploadFileRequest) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
 }
 
-func (rcv *MessageContent) Table() flatbuffers.Table {
+func (rcv *UploadFileRequest) Table() flatbuffers.Table {
 	return rcv._tab
 }
 
-func (rcv *MessageContent) EncryptedMetadata(j int) byte {
+func (rcv *UploadFileRequest) EncryptedMetadata(j int) byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
@@ -35,7 +35,7 @@ func (rcv *MessageContent) EncryptedMetadata(j int) byte {
 	return 0
 }
 
-func (rcv *MessageContent) EncryptedMetadataLength() int {
+func (rcv *UploadFileRequest) EncryptedMetadataLength() int {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
@@ -43,7 +43,7 @@ func (rcv *MessageContent) EncryptedMetadataLength() int {
 	return 0
 }
 
-func (rcv *MessageContent) EncryptedMetadataBytes() []byte {
+func (rcv *UploadFileRequest) EncryptedMetadataBytes() []byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
 	if o != 0 {
 		return rcv._tab.ByteVector(o + rcv._tab.Pos)
@@ -51,7 +51,7 @@ func (rcv *MessageContent) EncryptedMetadataBytes() []byte {
 	return nil
 }
 
-func (rcv *MessageContent) MutateEncryptedMetadata(j int, n byte) bool {
+func (rcv *UploadFileRequest) MutateEncryptedMetadata(j int, n byte) bool {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
@@ -60,7 +60,7 @@ func (rcv *MessageContent) MutateEncryptedMetadata(j int, n byte) bool {
 	return false
 }
 
-func (rcv *MessageContent) EncryptedData(j int) byte {
+func (rcv *UploadFileRequest) EncryptedData(j int) byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
@@ -69,7 +69,7 @@ func (rcv *MessageContent) EncryptedData(j int) byte {
 	return 0
 }
 
-func (rcv *MessageContent) EncryptedDataLength() int {
+func (rcv *UploadFileRequest) EncryptedDataLength() int {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
@@ -77,7 +77,7 @@ func (rcv *MessageContent) EncryptedDataLength() int {
 	return 0
 }
 
-func (rcv *MessageContent) EncryptedDataBytes() []byte {
+func (rcv *UploadFileRequest) EncryptedDataBytes() []byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
 		return rcv._tab.ByteVector(o + rcv._tab.Pos)
@@ -85,7 +85,7 @@ func (rcv *MessageContent) EncryptedDataBytes() []byte {
 	return nil
 }
 
-func (rcv *MessageContent) MutateEncryptedData(j int, n byte) bool {
+func (rcv *UploadFileRequest) MutateEncryptedData(j int, n byte) bool {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
@@ -94,21 +94,21 @@ func (rcv *MessageContent) MutateEncryptedData(j int, n byte) bool {
 	return false
 }
 
-func MessageContentStart(builder *flatbuffers.Builder) {
+func UploadFileRequestStart(builder *flatbuffers.Builder) {
 	builder.StartObject(2)
 }
-func MessageContentAddEncryptedMetadata(builder *flatbuffers.Builder, encryptedMetadata flatbuffers.UOffsetT) {
+func UploadFileRequestAddEncryptedMetadata(builder *flatbuffers.Builder, encryptedMetadata flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(encryptedMetadata), 0)
 }
-func MessageContentStartEncryptedMetadataVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+func UploadFileRequestStartEncryptedMetadataVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(1, numElems, 1)
 }
-func MessageContentAddEncryptedData(builder *flatbuffers.Builder, encryptedData flatbuffers.UOffsetT) {
+func UploadFileRequestAddEncryptedData(builder *flatbuffers.Builder, encryptedData flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(encryptedData), 0)
 }
-func MessageContentStartEncryptedDataVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+func UploadFileRequestStartEncryptedDataVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(1, numElems, 1)
 }
-func MessageContentEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+func UploadFileRequestEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }
