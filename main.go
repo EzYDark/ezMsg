@@ -5,7 +5,8 @@ import (
 
 	gio_app "gioui.org/app"
 	"gioui.org/unit"
-	"github.com/ezydark/ezMsg/app"
+	"github.com/ezydark/ezMsg/libs"
+	"github.com/ezydark/ezMsg/libs/client/comm"
 	gui "github.com/ezydark/ezMsg/libs/gui/events"
 	"github.com/rs/zerolog/log"
 )
@@ -17,8 +18,14 @@ const (
 )
 
 func main() {
-	app.InitLogger()
+	libs.InitLogger()
 	log.Info().Msgf("Starting %s...", WindowTitle)
+
+	err := comm.InitClient()
+	if err != nil {
+		log.Fatal().Msgf("Error running test client:\n%v", err)
+	}
+	return
 
 	// Start UI in a separate goroutine because gio_app.Main() blocks
 	// This allows clean separation between initialization and the event loop

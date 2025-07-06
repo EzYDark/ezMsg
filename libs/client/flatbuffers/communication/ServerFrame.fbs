@@ -1,0 +1,32 @@
+// The single entry point for all server-to-client communication.
+
+include "chat.fbs";
+include "file.fbs";
+
+namespace ezMsg.Communication;
+
+// A generic response for simple requests that only need a success/failure status.
+table GenericResponse {
+    request_nonce: ulong; // Echoes the nonce of the original client request.
+    success:bool;
+    error_message:string;
+}
+
+// A union of all possible messages the server can send.
+union ServerPayload {
+    // Pushed messages
+    NewChatMessage,
+    MessageStatusUpdate,
+
+    // Direct responses to requests
+    GenericResponse,
+    UploadFileResponse,
+    DownloadFileResponse
+}
+
+// The root container that wraps every server message.
+table ServerFrame {
+    payload:ServerPayload (required);
+}
+
+root_type ServerFrame;

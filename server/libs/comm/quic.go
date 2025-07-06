@@ -2,6 +2,7 @@ package comm
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	"github.com/quic-go/quic-go"
@@ -25,17 +26,21 @@ var serverConfig = &mainServer{
 }
 
 func InitServer() error {
-	listener, err := quic.ListenAddr(serverConfig.Host+":"+strconv.Itoa(serverConfig.Port), GenerateTLSConfig(), serverConfig.QuicConf)
+	tlsConf, err := GenerateTLSConfig()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to generate TLS config:\n%v", err)
+	}
+	listener, err := quic.ListenAddr(serverConfig.Host+":"+strconv.Itoa(serverConfig.Port), tlsConf, serverConfig.QuicConf)
+	if err != nil {
+		return fmt.Errorf("failed to start server:\n%v", err)
 	}
 	defer listener.Close()
-	log.Debug().Msg("Server started successfully")
+	log.Info().Msg("Server started and listening...")
 
 	for {
 		conn, err := listener.Accept(context.Background())
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to accept connection:\n%v", err)
 		}
 
 		go HandleConnection(conn)
