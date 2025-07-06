@@ -16,28 +16,33 @@ import (
 
 var Delimiter = []byte("\n\r\n\r")
 
+// Define specific types for identifiers to improve code clarity and safety.
+type ClientAddr string
+type PublicKey string
+
 // A thread-safe map for managing client connections.
-type ClientConnectionsList struct {
+type ClientConnectionsList[T ClientAddr | PublicKey] struct {
 	sync.RWMutex
-	list map[string]quic.Connection
+	list map[T]quic.Connection
 }
 
 // Add safely adds a new client connection to the list.
-func (c *ClientConnectionsList) Add(sessionToken string, conn quic.Connection) {
-	c.Lock() // Get the "write" lock
+func (c *ClientConnectionsList[T]) Add(identifier T, conn quic.Connection) {
+	c.Lock()
 	defer c.Unlock()
-	c.list[sessionToken] = conn
+	c.list[identifier] = conn
 }
 
-// Remove safely removes a client connection.
-func (c *ClientConnectionsList) Remove(sessionToken string) {
-	c.Lock() // Get the "write" lock
+// Remove safely removes a client connection from the list.
+func (c *ClientConnectionsList[T]) Remove(identifier T) {
+	c.Lock()
 	defer c.Unlock()
-	delete(c.list, sessionToken)
+	delete(c.list, identifier)
 }
 
-func (c *ClientConnectionsList) RemoveByConnection(conn quic.Connection) {
-	c.Lock() // Get the "write" lock
+// RemoveByConnection safely removes a client by their connection object.
+func (c *ClientConnectionsList[T]) RemoveByConnection(conn quic.Connection) {
+	c.Lock()
 	defer c.Unlock()
 	for id, list_conn := range c.list {
 		if list_conn == conn {
@@ -47,30 +52,22 @@ func (c *ClientConnectionsList) RemoveByConnection(conn quic.Connection) {
 	}
 }
 
-// Remove safely removes all connections.
-func (c *ClientConnectionsList) RemoveAll() {
-	c.Lock() // Get the "write" lock
-	defer c.Unlock()
-	c.list = make(map[string]quic.Connection)
-}
-
-// Get safely retrieves a connection for a given session token.
-func (c *ClientConnectionsList) Get(sessionToken string) (quic.Connection, bool) {
-	c.RLock() // Get a "read" lock
-	defer c.RUnlock()
-	conn, found := c.list[sessionToken]
-	return conn, found
-}
-
-// Global instance of our connection list.
-var ClientsList = &ClientConnectionsList{
-	list: make(map[string]quic.Connection),
-}
+// Global instances of our connection lists with specific types.
+var (
+	// Connections that are not yet authenticated.
+	GuestClients = &ClientConnectionsList[ClientAddr]{
+		list: make(map[ClientAddr]quic.Connection),
+	}
+	// Connections that have successfully authenticated, keyed by their public key.
+	AuthenticatedClients = &ClientConnectionsList[PublicKey]{
+		list: make(map[PublicKey]quic.Connection),
+	}
+)
 
 // handleStream processes incoming data from a single client stream.
 // This is the heart of the server's application logic.
 func handleStream(conn quic.Connection, stream quic.Stream) error {
-	log.Debug().Msg("Client opened stream.")
+	log.Debug().Msgf("Client '%s' opened stream.", conn.RemoteAddr())
 	reader := bufio.NewReader(stream)
 
 	buf, err := reader.ReadBytes(Delimiter[len(Delimiter)-1])
@@ -91,6 +88,16 @@ func handleStream(conn quic.Connection, stream quic.Stream) error {
 		return fmt.Errorf("failed to get payload from ClientFrame")
 	}
 
+	// =================================================================
+	// TODO: Implement Authentication Logic Here
+	//
+	// If authentication is successful:
+	//   1. guestID := GuestIdentifier(conn.RemoteAddr().String())
+	//   2. userKey := PublicKey("the_user_public_key")
+	//   3. GuestClients.Remove(guestID)
+	//   4. AuthenticatedClients.Add(userKey, conn)
+	// =================================================================
+
 	log.Debug().Msg("Client frame parsed successfully.")
 
 	switch clientFrame.PayloadType() {
@@ -104,16 +111,18 @@ func handleStream(conn quic.Connection, stream quic.Stream) error {
 }
 
 func HandleConnection(conn quic.Connection) error {
-	log.Debug().Msgf("Client connected from %s.", conn.RemoteAddr())
+	log.Debug().Msgf("Client connected from '%s'.", conn.RemoteAddr())
 
 	defer func() {
-		ClientsList.RemoveByConnection(conn)
+		GuestClients.RemoveByConnection(conn)
+		AuthenticatedClients.RemoveByConnection(conn)
+		log.Debug().Msgf("Client '%s' disconnected.", conn.RemoteAddr())
 	}()
 
 	for {
 		stream, err := conn.AcceptStream(context.Background())
 		if err != nil {
-			return fmt.Errorf("client %s closed connection:\n%v", conn.RemoteAddr(), err)
+			return fmt.Errorf("client '%s' closed connection:\n%v", conn.RemoteAddr(), err)
 		}
 		go handleStream(conn, stream)
 	}

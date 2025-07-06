@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/quic-go/quic-go"
 	"github.com/rs/zerolog/log"
@@ -21,7 +22,8 @@ var serverConfig = &mainServer{
 	Port: 8080,
 
 	QuicConf: &quic.Config{
-		Allow0RTT: true,
+		Allow0RTT:      true,
+		MaxIdleTimeout: 30 * time.Second,
 	},
 }
 

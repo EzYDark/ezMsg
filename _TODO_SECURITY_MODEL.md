@@ -5,7 +5,7 @@
 **Goal:** Get a basic, real-time chat working between two clients. For this phase, authentication is mocked/hardcoded and there is no E2EE.
 
 #### Server-Side
-- [ ] **Establish Basic Server:** Use your existing QUIC implementation to listen for and accept client connections.
+- [x] **Establish Basic Server:** Use your existing QUIC implementation to listen for and accept client connections.
 - [ ] **Manage Connections:** Implement a simple in-memory map to keep track of active client connections to know who to send messages to.
 - [ ] **Define Simple Message Format:** Decide on a simple text-based format for messages, like JSON (`{"sender": "user1", "text": "Hello!"}`), ignoring FlatBuffers and E2EE for now.
 - [ ] **Implement Message Relay Logic:** In your `handleStream` function, when a message is received from one client, loop through the connection map and broadcast it to all other connected clients.

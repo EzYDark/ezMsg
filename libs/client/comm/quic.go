@@ -28,7 +28,8 @@ var serverConfig = &remoteServer{
 	Port: 8080,
 
 	QuicConf: &quic.Config{
-		Allow0RTT: true,
+		Allow0RTT:      true,
+		MaxIdleTimeout: 30 * time.Second,
 	},
 
 	TlsConf: &tls.Config{
@@ -39,6 +40,28 @@ var serverConfig = &remoteServer{
 }
 
 var Delimiter = []byte("\n\r\n\r")
+
+// sendHeartbeats periodically pings the server to keep the connection alive.
+func sendHeartbeats(conn *quic.Conn) {
+	ticker := time.NewTicker(serverConfig.QuicConf.MaxIdleTimeout - 5*time.Second)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		stream, err := conn.OpenStream()
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to open stream for heartbeat")
+			return
+		}
+
+		_, err = stream.Write([]byte{0})
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to write heartbeat")
+		} else {
+			log.Debug().Msg("Heartbeat sent.")
+		}
+		stream.Close()
+	}
+}
 
 func InitClient() error {
 	_, _, err := GenerateKeypairs()
@@ -57,7 +80,11 @@ func InitClient() error {
 	}
 	defer conn.CloseWithError(0, "connection closed by client")
 
-	<-conn.HandshakeComplete() // Wait for handshake
+	<-conn.HandshakeComplete()
+	log.Debug().Msg("Handshake complete.")
+
+	go sendHeartbeats(conn)
+
 	if !conn.ConnectionState().Used0RTT {
 		log.Debug().Msg("Server did not used 0-RTT.")
 	}
@@ -124,6 +151,10 @@ func InitClient() error {
 
 	if err := scanner.Err(); err != nil {
 		return fmt.Errorf("error reading from stream: %w", err)
+	}
+
+	for true {
+		time.Sleep(time.Second)
 	}
 
 	return nil
