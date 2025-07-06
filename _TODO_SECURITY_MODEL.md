@@ -6,14 +6,14 @@
 
 #### Server-Side
 - [x] **Establish Basic Server:** Use your existing QUIC implementation to listen for and accept client connections.
-- [ ] **Manage Connections:** Implement a simple in-memory map to keep track of active client connections to know who to send messages to.
-- [ ] **Define Simple Message Format:** Decide on a simple text-based format for messages, like JSON (`{"sender": "user1", "text": "Hello!"}`), ignoring FlatBuffers and E2EE for now.
+- [x] **Manage Connections:** Implement a simple in-memory map to keep track of active client connections to know who to send messages to.
+- [x] **Define Simple Message Format:** Decide on a simple text-based format for messages, like JSON (`{"sender": "user1", "text": "Hello!"}`), ignoring FlatBuffers and E2EE for now.
 - [ ] **Implement Message Relay Logic:** In your `handleStream` function, when a message is received from one client, loop through the connection map and broadcast it to all other connected clients.
 
 #### Client-Side
 - [ ] **Build Core Chat UI:** Use your existing Gio UI code to create a message display area, an input widget, and a send button.
-- [ ] **Connect to Server:** Write the client-side logic to establish a QUIC connection to the server when the app starts.
-- [ ] **Send Messages:** When the user clicks the "Send" button, format the text into the simple message format and send it over the QUIC stream.
+- [x] **Connect to Server:** Write the client-side logic to establish a QUIC connection to the server when the app starts.
+- [x] **Send Messages:** When the user clicks the "Send" button, format the text into the simple message format and send it over the QUIC stream.
 - [ ] **Receive and Display Messages:** Create a `goroutine` that constantly listens for incoming data from the server. When a new message is received, add it to the chat UI's list and trigger a refresh.
 
 ---
