@@ -4,9 +4,9 @@ import (
 	"gioui.org/font"
 	"gioui.org/text"
 	"gioui.org/widget/material"
-	"github.com/ezydark/ezMsg/app/db"
-	"github.com/ezydark/ezMsg/libs/gui/fonts"
-	"github.com/ezydark/ezMsg/libs/gui/pages"
+	"github.com/ezydark/ezMsg/src/_test/app/db"
+	"github.com/ezydark/ezMsg/src/libs/gui/fonts"
+	"github.com/ezydark/ezMsg/src/libs/gui/pages"
 )
 
 type ezAppState struct {

@@ -5,9 +5,9 @@ import (
 
 	gio_app "gioui.org/app"
 	"gioui.org/unit"
-	"github.com/ezydark/ezMsg/libs"
-	"github.com/ezydark/ezMsg/libs/client/comm"
-	gui "github.com/ezydark/ezMsg/libs/gui/events"
+	"github.com/ezydark/ezMsg/src/libs"
+	"github.com/ezydark/ezMsg/src/libs/client"
+	gui "github.com/ezydark/ezMsg/src/libs/gui/events"
 	"github.com/rs/zerolog/log"
 )
 
@@ -21,7 +21,7 @@ func main() {
 	libs.InitLogger()
 	log.Info().Msgf("Starting %s...", WindowTitle)
 
-	err := comm.InitClient()
+	err := client.InitClient()
 	if err != nil {
 		log.Fatal().Msgf("Error running test client:\n%v", err)
 	}

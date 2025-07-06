@@ -1,4 +1,4 @@
-package comm
+package client
 
 import (
 	"bufio"
@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"time"
 
-	fb "github.com/ezydark/ezMsg/libs/client/flatbuffers/generated/ezMsg/Communication"
+	fb "github.com/ezydark/ezMsg/src/libs/flatbuffers/generated/ezMsg/Communication"
 	flatbuffers "github.com/google/flatbuffers/go"
 	"github.com/quic-go/quic-go"
 	"github.com/rs/zerolog/log"

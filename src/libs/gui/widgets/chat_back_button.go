@@ -4,9 +4,9 @@ import (
 	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/x/richtext"
-	. "github.com/ezydark/ezMsg/ezio"
-	"github.com/ezydark/ezMsg/libs/gui"
-	"github.com/ezydark/ezMsg/libs/gui/pages"
+	. "github.com/ezydark/ezMsg/src/ezio"
+	"github.com/ezydark/ezMsg/src/libs/gui"
+	"github.com/ezydark/ezMsg/src/libs/gui/pages"
 	"github.com/rs/zerolog/log"
 )
 

@@ -6,9 +6,9 @@ import (
 	"gioui.org/layout"
 	"gioui.org/unit"
 	"gioui.org/x/richtext"
-	"github.com/ezydark/ezMsg/app/db"
-	. "github.com/ezydark/ezMsg/ezio"
-	"github.com/ezydark/ezMsg/libs/gui"
+	"github.com/ezydark/ezMsg/src/_test/app/db"
+	. "github.com/ezydark/ezMsg/src/ezio"
+	"github.com/ezydark/ezMsg/src/libs/gui"
 )
 
 func ChatMsgBubble(message *db.Message, index int) layout.Widget {
