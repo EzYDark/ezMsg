@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/ezydark/ezMsg/libs/client/flatbuffers/generated/ezMsg/Communication"
+	fb "github.com/ezydark/ezMsg/libs/client/flatbuffers/generated/ezMsg/Communication"
 	flatbuffers "github.com/google/flatbuffers/go"
 	"github.com/quic-go/quic-go"
 	"github.com/rs/zerolog/log"
@@ -98,23 +98,23 @@ func InitClient() error {
 	builder := flatbuffers.NewBuilder(1024)
 
 	sessionToken := builder.CreateString("dummy-session-token")
-	Communication.UnencryptedClientMetadataStart(builder)
-	Communication.UnencryptedClientMetadataAddSessionToken(builder, sessionToken)
-	Communication.UnencryptedClientMetadataAddNonce(builder, 1234567890) // Used to prevent replay attacks.
-	Communication.UnencryptedClientMetadataAddTimestamp(builder, time.Now().Unix())
-	metadataOffset := Communication.UnencryptedClientMetadataEnd(builder)
+	fb.UnencryptedClientMetadataStart(builder)
+	fb.UnencryptedClientMetadataAddSessionToken(builder, sessionToken)
+	fb.UnencryptedClientMetadataAddNonce(builder, 1234567890) // Used to prevent replay attacks.
+	fb.UnencryptedClientMetadataAddTimestamp(builder, time.Now().Unix())
+	metadataOffset := fb.UnencryptedClientMetadataEnd(builder)
 
 	encryptedContent := builder.CreateByteVector([]byte("this would be encrypted message content"))
-	Communication.ChatMessageRequestStart(builder)
-	Communication.ChatMessageRequestAddChatUid(builder, 9876543210) // The unique ID of the chat.
-	Communication.ChatMessageRequestAddEncryptedContent(builder, encryptedContent)
-	payloadOffset := Communication.ChatMessageRequestEnd(builder)
+	fb.ChatMessageRequestStart(builder)
+	fb.ChatMessageRequestAddChatUid(builder, 9876543210) // The unique ID of the chat.
+	fb.ChatMessageRequestAddEncryptedContent(builder, encryptedContent)
+	payloadOffset := fb.ChatMessageRequestEnd(builder)
 
-	Communication.ClientFrameStart(builder)
-	Communication.ClientFrameAddMetadata(builder, metadataOffset)
-	Communication.ClientFrameAddPayloadType(builder, Communication.ClientPayloadChatMessageRequest)
-	Communication.ClientFrameAddPayload(builder, payloadOffset)
-	clientFrameOffset := Communication.ClientFrameEnd(builder)
+	fb.ClientFrameStart(builder)
+	fb.ClientFrameAddMetadata(builder, metadataOffset)
+	fb.ClientFrameAddPayloadType(builder, fb.ClientPayloadChatMessageRequest)
+	fb.ClientFrameAddPayload(builder, payloadOffset)
+	clientFrameOffset := fb.ClientFrameEnd(builder)
 
 	builder.Finish(clientFrameOffset)
 	buf := builder.FinishedBytes()
@@ -142,18 +142,36 @@ func InitClient() error {
 	if scanner.Scan() {
 		responseBytes := scanner.Bytes()
 		log.Debug().Msg("Response received successfully.")
-		fbFrame := Communication.GetRootAsClientFrame(responseBytes, 0)
-		metadataTable := new(Communication.UnencryptedClientMetadata)
-		metadata := fbFrame.Metadata(metadataTable)
-		log.Info().Msgf("Received frame with nonce '%d' and sessionToken '%s'", metadata.Nonce(), metadata.SessionToken())
 
+		// TODO: switch to serverFrame instead
+		clientFrame := fb.GetRootAsClientFrame(responseBytes, 0)
+		payloadTable := new(flatbuffers.Table)
+		if !clientFrame.Payload(payloadTable) {
+			return fmt.Errorf("failed to get payload from ClientFrame")
+		}
+
+		metadataTable := new(fb.UnencryptedClientMetadata)
+		metadata := clientFrame.Metadata(metadataTable)
+
+		log.Info().Msgf("Received frame with nonce '%d' and sessionToken '%s'",
+			metadata.Nonce(), metadata.SessionToken())
+
+		switch clientFrame.PayloadType() {
+		case fb.ClientPayloadChatMessageRequest:
+			req := new(fb.ChatMessageRequest)
+			req.Init(payloadTable.Bytes, payloadTable.Pos)
+			log.Debug().Msg("[client] Chat message received successfully.")
+			// return HandleChatMessageRequest(conn, stream, req)
+		default:
+			return fmt.Errorf("received unknown frame type:\n%v", clientFrame.PayloadType())
+		}
 	}
 
 	if err := scanner.Err(); err != nil {
 		return fmt.Errorf("error reading from stream: %w", err)
 	}
 
-	for true {
+	for {
 		time.Sleep(time.Second)
 	}
 
