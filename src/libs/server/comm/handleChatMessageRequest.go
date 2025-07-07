@@ -1,14 +1,14 @@
-package comm
+package server
 
 import (
 	"fmt"
 
-	fb "github.com/ezydark/ezMsg/server/flatbuffers/generated/ezMsg/Communication"
+	fb "github.com/ezydark/ezMsg/src/libs/flatbuffers/generated/ezMsg/Communication"
 	"github.com/quic-go/quic-go"
 	"github.com/rs/zerolog/log"
 )
 
-func HandleChatMessageRequest(conn quic.Connection, stream quic.Stream, req *fb.ChatMessageRequest) error {
+func HandleChatMessageRequest(conn *quic.Conn, stream *quic.Stream, req *fb.ChatMessageRequest) error {
 	log.Debug().Msgf("Received chat message from '%s' to chat '%d'", conn.RemoteAddr(), req.ChatUid())
 
 	log.Debug().Msg("Echoing the message back to the client")

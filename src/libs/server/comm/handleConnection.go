@@ -1,4 +1,4 @@
-package comm
+package server
 
 import (
 	"bufio"
@@ -8,7 +8,7 @@ import (
 	"io"
 	"sync"
 
-	fb "github.com/ezydark/ezMsg/server/flatbuffers/generated/ezMsg/Communication"
+	fb "github.com/ezydark/ezMsg/src/libs/flatbuffers/generated/ezMsg/Communication"
 	flatbuffers "github.com/google/flatbuffers/go"
 	"github.com/quic-go/quic-go"
 	"github.com/rs/zerolog/log"
@@ -23,11 +23,11 @@ type PublicKey string
 // A thread-safe map for managing client connections.
 type ClientConnectionsList[T ClientAddr | PublicKey] struct {
 	sync.RWMutex
-	list map[T]quic.Connection
+	list map[T]*quic.Conn
 }
 
 // Add safely adds a new client connection to the list.
-func (c *ClientConnectionsList[T]) Add(identifier T, conn quic.Connection) {
+func (c *ClientConnectionsList[T]) Add(identifier T, conn *quic.Conn) {
 	c.Lock()
 	defer c.Unlock()
 	c.list[identifier] = conn
@@ -41,7 +41,7 @@ func (c *ClientConnectionsList[T]) Remove(identifier T) {
 }
 
 // RemoveByConnection safely removes a client by their connection object.
-func (c *ClientConnectionsList[T]) RemoveByConnection(conn quic.Connection) {
+func (c *ClientConnectionsList[T]) RemoveByConnection(conn *quic.Conn) {
 	c.Lock()
 	defer c.Unlock()
 	for id, list_conn := range c.list {
@@ -56,17 +56,17 @@ func (c *ClientConnectionsList[T]) RemoveByConnection(conn quic.Connection) {
 var (
 	// Connections that are not yet authenticated.
 	GuestClients = &ClientConnectionsList[ClientAddr]{
-		list: make(map[ClientAddr]quic.Connection),
+		list: make(map[ClientAddr]*quic.Conn),
 	}
 	// Connections that have successfully authenticated, keyed by their public key.
 	AuthenticatedClients = &ClientConnectionsList[PublicKey]{
-		list: make(map[PublicKey]quic.Connection),
+		list: make(map[PublicKey]*quic.Conn),
 	}
 )
 
 // handleStream processes incoming data from a single client stream.
 // This is the heart of the server's application logic.
-func handleStream(conn quic.Connection, stream quic.Stream) error {
+func handleStream(conn *quic.Conn, stream *quic.Stream) error {
 	log.Debug().Msgf("Client '%s' opened stream.", conn.RemoteAddr())
 	reader := bufio.NewReader(stream)
 
@@ -110,7 +110,7 @@ func handleStream(conn quic.Connection, stream quic.Stream) error {
 	}
 }
 
-func HandleConnection(conn quic.Connection) error {
+func HandleConnection(conn *quic.Conn) error {
 	log.Debug().Msgf("Client connected from '%s'.", conn.RemoteAddr())
 
 	defer func() {
