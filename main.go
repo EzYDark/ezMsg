@@ -6,17 +6,15 @@ import (
 
 	"gioui.org/app"
 	"gioui.org/unit"
-	"github.com/ezydark/ezMsg/src/libs"
-	"github.com/ezydark/ezMsg/src/libs/client"
-	tui "github.com/ezydark/ezMsg/src/libs/debug_tui"
-	gui "github.com/ezydark/ezMsg/src/libs/gui/events"
-	server "github.com/ezydark/ezMsg/src/libs/server/comm"
-	"github.com/rs/zerolog/log"
+	gui "github.com/ezydark/ezMsg/gui/events"
+	"github.com/ezydark/ezdebug/tui"
+	"github.com/ezydark/ezlog"
+	"github.com/ezydark/ezlog/log"
 )
 
 const (
 	WindowWidth  = 450
-	WindowHeight = 900
+	WindowHeight = 750
 	WindowTitle  = "ezChat"
 )
 
@@ -27,29 +25,57 @@ func main() {
 	flag.Parse()
 
 	if *debugFlag {
-		app := tui.NewApp()
-		libs.InitWithWriter(app.LogWriter())
+		debugTUI := tui.Init()
+
+		ezlog.New().WithWriter(debugTUI.GetLogWriter()).WithTviewCompat().Build()
+
 		log.Info().Msgf("Starting %s in debug TUI mode...", WindowTitle)
-		if err := app.Run(); err != nil {
-			log.Fatal().Msgf("Error running debug TUI:\n%v", err)
+
+		features := []tui.Feature{
+			{
+				Name:           "Run Server",
+				Description:    "Run Server for other clients to connect",
+				StartOnStartup: *serverFlag,
+				OnStart: func(self *tui.Feature) {
+					self.Enabled = true
+					log.Info().Msg("Starting Server...")
+					// server.InitServer()
+				},
+				OnStop: func(self *tui.Feature) {
+					self.Enabled = false
+					log.Info().Msg("Stopping Server...")
+					// server.CloseServer()
+				},
+			},
+			{
+				Name:           "Run Client",
+				Description:    "Run Client to connect to the already running Server",
+				StartOnStartup: *clientFlag,
+				OnStart: func(self *tui.Feature) {
+					self.Enabled = true
+					log.Info().Msg("Starting Client...")
+					// err := client.InitClient()
+					// if err != nil {
+					// 	log.Fatal().Msgf("Error running test client:\n%v", err)
+					// }
+				},
+				OnStop: func(self *tui.Feature) {
+					self.Enabled = false
+					log.Info().Msg("Stopping Client...")
+					// client.CloseClient()
+				},
+			},
 		}
-	}
+		tui.GetFeatureList().Set(features)
 
-	libs.InitWithWriter(os.Stderr)
-	log.Info().Msgf("Starting %s...", WindowTitle)
-
-	if *serverFlag {
-		server.InitServer()
-	}
-
-	if *clientFlag {
-		err := client.InitClient()
-		if err != nil {
-			log.Fatal().Msgf("Error running test client:\n%v", err)
+		// Start DebugTUI application (Blocking call)
+		if err := debugTUI.Start(); err != nil {
+			log.Fatal().Msgf("Error running ezDebugTUI example:\n%v", err)
 		}
-	}
+	} else {
+		ezlog.New().Build()
+		log.Info().Msgf("Starting %s...", WindowTitle)
 
-	if !*serverFlag && !*clientFlag {
 		// Start UI in a separate goroutine because app.Main() blocks
 		// This allows clean separation between initialization and the event loop
 		go func() {
